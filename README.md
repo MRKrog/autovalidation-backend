@@ -5,7 +5,7 @@ A Node.js backend that combines VIN decoding with Claude AI market analysis to p
 ## 🚀 Quick Start
 
 ### 1. Prerequisites
-- Node.js 16+ installed
+- Node.js 18+ installed
 - Claude API key from [console.anthropic.com](https://console.anthropic.com/)
 
 ### 2. Setup
@@ -33,7 +33,7 @@ Edit `.env` file:
 ```bash
 PORT=3001
 NODE_ENV=development
-AUTO_DEV_API_KEY=ZrQEPSkKbWtyb2djcnlwdG9AZ21haWwuY29t
+AUTO_DEV_API_KEY=your_actual_auto_dev_api_key_here
 CLAUDE_API_KEY=your_actual_claude_api_key_here
 ```
 
