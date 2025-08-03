@@ -100,7 +100,7 @@ app.post('/api/valuation', async (req, res) => {
         made_in: vehicleData.made_in,
         msrp: vehicleData.msrp
       },
-      market_analysis: claudeAnalysis,
+      analysis: claudeAnalysis, // This will be either structured JSON or raw text
       report_id: `VVP-${Date.now()}`,
       generated_by: 'VinValuation Pro API v1.0'
     };

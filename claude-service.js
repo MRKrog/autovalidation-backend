@@ -24,7 +24,7 @@ const analyzeVehicleWithClaude = async (vehicleData) => {
   
   try {
     const prompt = `
-You are a professional automotive appraiser and market analyst. Analyze this vehicle and provide a comprehensive valuation report.
+You are a professional automotive appraiser and market analyst. Analyze this vehicle and provide a comprehensive valuation report in JSON format.
 
 Vehicle Details:
 - Year: ${vehicleData.year}
@@ -38,34 +38,55 @@ Vehicle Details:
 - Fuel Type: ${vehicleData.fuel_type}
 - Manufacturing Country: ${vehicleData.made_in}
 
-Please provide:
-1. Current Market Values (as of ${new Date().toLocaleDateString()}):
-   - Retail Value (dealer lot price)
-   - Private Party Value (individual seller)
-   - Trade-in Value (dealer trade)
+Please provide a JSON response with the following structure:
 
-2. Market Analysis:
-   - Current market demand (High/Medium/Low)
-   - Price trend over last 12 months
-   - Regional variations to consider
+{
+  "market_values": {
+    "retail_value": {
+      "min": 13500,
+      "max": 15200,
+      "description": "Dealer lot price"
+    },
+    "private_party_value": {
+      "min": 12000,
+      "max": 13800,
+      "description": "Individual seller price"
+    },
+    "trade_in_value": {
+      "min": 10500,
+      "max": 11900,
+      "description": "Dealer trade value"
+    }
+  },
+  "market_analysis": {
+    "demand_level": "Medium",
+    "price_trend": "Stable with slight upward trend",
+    "regional_variations": "Coastal regions may see higher prices"
+  },
+  "key_factors": {
+    "condition_impact": "Well-maintained vehicles command higher prices",
+    "mileage_considerations": "Average 12,000 miles per year expected",
+    "common_issues": "Minor recalls addressed by manufacturer",
+    "resale_outlook": "40-50% value retention after 5 years"
+  },
+  "strategic_recommendations": {
+    "best_time": "Current market is favorable",
+    "negotiation_points": "Highlight maintenance and low mileage",
+    "market_positioning": "Competitive against Accord and Camry"
+  },
+  "risk_assessment": {
+    "reliability_concerns": "Generally reliable with few major issues",
+    "depreciation_outlook": "Average depreciation rates",
+    "market_saturation": "Balanced supply and demand"
+  },
+  "summary": {
+    "overall_assessment": "Solid vehicle with stable market outlook",
+    "recommended_action": "Good time to buy or sell",
+    "confidence_level": "High"
+  }
+}
 
-3. Key Factors Affecting Value:
-   - Vehicle condition impact
-   - Mileage considerations for this model year
-   - Common issues or recalls for this vehicle
-   - Resale value outlook
-
-4. Strategic Recommendations:
-   - Best time to sell/buy
-   - Negotiation talking points
-   - Market positioning vs competitors
-
-5. Risk Assessment:
-   - Reliability concerns
-   - Depreciation outlook
-   - Market saturation
-
-Please provide specific dollar amounts based on current market conditions and format your response as a detailed professional report.
+Provide specific dollar amounts based on current market conditions. Ensure all values are realistic for the ${vehicleData.year} ${vehicleData.make} ${vehicleData.model}.
 `;
 
     console.log('📝 Calling Claude API...');
@@ -87,7 +108,22 @@ Please provide specific dollar amounts based on current market conditions and fo
     const analysis = response.content[0].text;
     console.log(`📝 Analysis generated: ${analysis.length} characters`);
 
-    return analysis;
+    // Try to parse the JSON response
+    try {
+      // Extract JSON from the response (in case there's extra text)
+      const jsonMatch = analysis.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        const parsedAnalysis = JSON.parse(jsonMatch[0]);
+        console.log('✅ Successfully parsed structured analysis');
+        return parsedAnalysis;
+      } else {
+        console.log('⚠️ No JSON found in response, returning raw text');
+        return analysis;
+      }
+    } catch (parseError) {
+      console.log('⚠️ Failed to parse JSON, returning raw text:', parseError.message);
+      return analysis;
+    }
     
   } catch (error) {
     console.error('❌ Claude API error:', error);
