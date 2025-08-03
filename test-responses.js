@@ -4,6 +4,7 @@ const MOCK_RESPONSES = {
     "success": true,
     "timestamp": "2025-08-03T01:46:04.242Z",
     "vin": "1G1ZD5ST8JF134138",
+    "condition": "good",
     "vehicle": {
       "year": 2018,
       "make": "Chevrolet",
@@ -66,6 +67,7 @@ const MOCK_RESPONSES = {
     "success": true,
     "timestamp": "2025-08-03T01:46:04.242Z",
     "vin": "1HGBH41JXMN109186",
+    "condition": "good",
     "vehicle": {
       "year": 2021,
       "make": "Honda",
@@ -128,6 +130,7 @@ const MOCK_RESPONSES = {
     "success": true,
     "timestamp": "2025-08-03T01:46:04.242Z",
     "vin": "1FTFW1ET5DFC10312",
+    "condition": "good",
     "vehicle": {
       "year": 2013,
       "make": "Ford",
@@ -213,7 +216,31 @@ const adjustValuesForCondition = (response, condition) => {
     'poor': 0.75      // -25%
   };
 
+  const conditionMessages = {
+    'excellent': {
+      condition_impact: "Excellent condition vehicles command premium prices with minimal negotiation room",
+      negotiation_points: "Highlight pristine condition, full service history, and showroom-ready appearance",
+      overall_assessment: "Premium vehicle in excellent condition with strong market appeal"
+    },
+    'good': {
+      condition_impact: "Well-maintained vehicles command higher prices",
+      negotiation_points: "Highlight maintenance and low mileage",
+      overall_assessment: "Solid vehicle with stable market outlook"
+    },
+    'fair': {
+      condition_impact: "Fair condition vehicles require price adjustments and may need minor repairs",
+      negotiation_points: "Be prepared to address condition issues and consider repair costs in pricing",
+      overall_assessment: "Functional vehicle with some wear, priced accordingly"
+    },
+    'poor': {
+      condition_impact: "Poor condition significantly impacts value and may require major repairs",
+      negotiation_points: "Price should reflect significant repair needs and limited market appeal",
+      overall_assessment: "Vehicle in poor condition with limited market value"
+    }
+  };
+
   const multiplier = conditionMultipliers[condition] || 1.0;
+  const messages = conditionMessages[condition] || conditionMessages['good'];
   
   // Deep clone the response
   const adjustedResponse = JSON.parse(JSON.stringify(response));
@@ -230,15 +257,22 @@ const adjustValuesForCondition = (response, condition) => {
     });
   }
 
+  // Update condition-specific messaging
+  if (adjustedResponse.analysis) {
+    if (adjustedResponse.analysis.key_factors) {
+      adjustedResponse.analysis.key_factors.condition_impact = messages.condition_impact;
+    }
+    if (adjustedResponse.analysis.strategic_recommendations) {
+      adjustedResponse.analysis.strategic_recommendations.negotiation_points = messages.negotiation_points;
+    }
+    if (adjustedResponse.analysis.summary) {
+      adjustedResponse.analysis.summary.overall_assessment = messages.overall_assessment;
+    }
+  }
+
   // Update condition in the response
   adjustedResponse.condition = condition;
   
-  // Update summary to reflect condition
-  if (adjustedResponse.analysis && adjustedResponse.analysis.summary) {
-    adjustedResponse.analysis.summary.overall_assessment = 
-      `${adjustedResponse.analysis.summary.overall_assessment} (${condition} condition)`;
-  }
-
   return adjustedResponse;
 };
 
