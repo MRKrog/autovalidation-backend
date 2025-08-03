@@ -16,18 +16,18 @@ const MOCK_RESPONSES = {
     "analysis": {
       "market_values": {
         "retail_value": {
-          "min": 13500,
-          "max": 15200,
+          "min": 14500,
+          "max": 16800,
           "description": "Dealer lot price"
         },
         "private_party_value": {
-          "min": 12000,
-          "max": 13800,
+          "min": 13200,
+          "max": 15300,
           "description": "Individual seller price"
         },
         "trade_in_value": {
-          "min": 10500,
-          "max": 11900,
+          "min": 11800,
+          "max": 13500,
           "description": "Dealer trade value"
         }
       },
@@ -40,12 +40,12 @@ const MOCK_RESPONSES = {
         "condition_impact": "Well-maintained vehicles command higher prices",
         "mileage_considerations": "Average 12,000 miles per year expected",
         "common_issues": "Minor recalls addressed by manufacturer",
-        "resale_outlook": "40-50% value retention after 5 years"
+        "resale_outlook": "45-55% value retention after 5 years"
       },
       "strategic_recommendations": {
         "best_time": "Current market is favorable",
         "negotiation_points": "Highlight maintenance and low mileage",
-        "market_positioning": "Competitive against Accord and Camry"
+        "market_positioning": "Competitive against Honda Accord and Toyota Camry"
       },
       "risk_assessment": {
         "reliability_concerns": "Generally reliable with few major issues",
@@ -79,45 +79,45 @@ const MOCK_RESPONSES = {
       "market_values": {
         "retail_value": {
           "min": 18500,
-          "max": 21200,
+          "max": 20800,
           "description": "Dealer lot price"
         },
         "private_party_value": {
-          "min": 17000,
-          "max": 19800,
+          "min": 16000,
+          "max": 18500,
           "description": "Individual seller price"
         },
         "trade_in_value": {
-          "min": 15500,
-          "max": 17900,
+          "min": 15000,
+          "max": 17000,
           "description": "Dealer trade value"
         }
       },
       "market_analysis": {
-        "demand_level": "High",
-        "price_trend": "Strong upward trend due to Honda reliability",
-        "regional_variations": "Popular nationwide with consistent demand"
+        "demand_level": "Medium-High",
+        "price_trend": "Stable with slight upward trend",
+        "regional_variations": "Coastal regions may see higher prices"
       },
       "key_factors": {
-        "condition_impact": "Honda reliability significantly impacts value",
-        "mileage_considerations": "Lower mileage commands premium prices",
-        "common_issues": "Very few recalls for this model year",
-        "resale_outlook": "60-70% value retention after 4 years"
+        "condition_impact": "Well-maintained vehicles command higher prices",
+        "mileage_considerations": "Average 12,000 miles per year expected",
+        "common_issues": "Minor recalls addressed by manufacturer",
+        "resale_outlook": "45-55% value retention after 5 years"
       },
       "strategic_recommendations": {
-        "best_time": "Current market is favorable for sellers",
-        "negotiation_points": "Emphasize Honda reliability and fuel efficiency",
-        "market_positioning": "Strong competitor against Toyota Corolla"
+        "best_time": "Current market is favorable",
+        "negotiation_points": "Highlight maintenance and low mileage",
+        "market_positioning": "Competitive against Accord and Camry"
       },
       "risk_assessment": {
-        "reliability_concerns": "Very low - among most reliable vehicles",
-        "depreciation_outlook": "Excellent value retention",
-        "market_saturation": "High demand, low supply"
+        "reliability_concerns": "Generally reliable with few major issues",
+        "depreciation_outlook": "Average depreciation rates",
+        "market_saturation": "Balanced supply and demand"
       },
       "summary": {
-        "overall_assessment": "Excellent vehicle with strong market demand",
-        "recommended_action": "Excellent time to sell",
-        "confidence_level": "Very High"
+        "overall_assessment": "Solid vehicle with stable market outlook",
+        "recommended_action": "Good time to buy or sell",
+        "confidence_level": "High"
       }
     },
     "report_id": "VVP-1754185564243",
@@ -140,45 +140,45 @@ const MOCK_RESPONSES = {
     "analysis": {
       "market_values": {
         "retail_value": {
-          "min": 22500,
-          "max": 26800,
+          "min": 16500,
+          "max": 18200,
           "description": "Dealer lot price"
         },
         "private_party_value": {
-          "min": 20500,
-          "max": 24500,
+          "min": 14000,
+          "max": 16000,
           "description": "Individual seller price"
         },
         "trade_in_value": {
-          "min": 18500,
-          "max": 22200,
+          "min": 12500,
+          "max": 14000,
           "description": "Dealer trade value"
         }
       },
       "market_analysis": {
-        "demand_level": "Very High",
-        "price_trend": "Strong upward trend due to truck demand",
-        "regional_variations": "Higher demand in rural and construction areas"
+        "demand_level": "High",
+        "price_trend": "Stable with slight upward trend",
+        "regional_variations": "Coastal regions and areas with active construction industries may see higher prices"
       },
       "key_factors": {
-        "condition_impact": "Trucks are work vehicles, condition is critical",
-        "mileage_considerations": "High mileage expected but affects value",
-        "common_issues": "Some transmission issues reported for this year",
-        "resale_outlook": "Good retention due to strong truck market"
+        "condition_impact": "Well-maintained vehicles in excellent condition can command higher prices",
+        "mileage_considerations": "Average 12,000 to 15,000 miles per year expected for this model",
+        "common_issues": "Some minor recalls related to electrical components have been addressed by the manufacturer",
+        "resale_outlook": "45-55% value retention after 5 years"
       },
       "strategic_recommendations": {
-        "best_time": "Current market is excellent for sellers",
-        "negotiation_points": "Emphasize towing capacity and reliability",
-        "market_positioning": "Strong against Chevy Silverado and Ram 1500"
+        "best_time": "Current market conditions are favorable for both buyers and sellers",
+        "negotiation_points": "Highlight maintenance history, low mileage, and any additional features or upgrades",
+        "market_positioning": "Competitive against other full-size pickup trucks like the Chevrolet Silverado and Ram 1500"
       },
       "risk_assessment": {
-        "reliability_concerns": "Generally reliable but check transmission",
-        "depreciation_outlook": "Good - trucks hold value well",
-        "market_saturation": "High demand, especially for 4WD models"
+        "reliability_concerns": "Generally reliable with few major issues reported, though some owners have experienced minor electrical problems",
+        "depreciation_outlook": "Average depreciation rates, with higher resale values compared to similar-sized competitors",
+        "market_saturation": "Balanced supply and demand, with some regional variations"
       },
       "summary": {
-        "overall_assessment": "Solid truck with strong market demand",
-        "recommended_action": "Excellent time to sell",
+        "overall_assessment": "The 2013 Ford F-150 is a solid, reliable, and well-regarded full-size pickup truck with a stable market outlook. It is a good choice for both personal and commercial use.",
+        "recommended_action": "This is a good time to buy or sell the 2013 Ford F-150, as the market conditions are favorable.",
         "confidence_level": "High"
       }
     },
