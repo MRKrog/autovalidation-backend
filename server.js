@@ -26,7 +26,7 @@ const isValidVIN = (vin) => {
 // Main VIN valuation endpoint
 app.post('/api/valuation', async (req, res) => {
   try {
-    const { vin } = req.body;
+    const { vin, condition } = req.body;
     
     // Validate VIN
     if (!isValidVIN(vin)) {
@@ -35,6 +35,17 @@ app.post('/api/valuation', async (req, res) => {
         message: 'VIN must be exactly 17 characters and contain only valid characters'
       });
     }
+
+    // Validate condition (optional but if provided, must be valid)
+    const validConditions = ['excellent', 'good', 'fair', 'poor'];
+    if (condition && !validConditions.includes(condition.toLowerCase())) {
+      return res.status(400).json({
+        error: 'Invalid condition',
+        message: 'Condition must be one of: excellent, good, fair, poor'
+      });
+    }
+
+    const vehicleCondition = condition ? condition.toLowerCase() : 'good'; // Default to good if not provided
 
     console.log(`Processing VIN: ${vin}`);
 
@@ -76,10 +87,10 @@ app.post('/api/valuation', async (req, res) => {
     // Check if we're in test mode and have a mock response
     if (process.env.NODE_ENV === 'test' && hasMockResponse(vin)) {
       console.log('🧪 Using mock response for testing');
-      const mockResponse = getMockResponse(vin);
-      claudeAnalysis = mockResponse.market_analysis;
+      const mockResponse = getMockResponse(vin, vehicleCondition);
+      claudeAnalysis = mockResponse.analysis;
     } else {
-      claudeAnalysis = await analyzeVehicleWithClaude(vehicleData);
+      claudeAnalysis = await analyzeVehicleWithClaude(vehicleData, vehicleCondition);
     }
 
     // Step 3: Structure the response
@@ -100,6 +111,7 @@ app.post('/api/valuation', async (req, res) => {
         made_in: vehicleData.made_in,
         msrp: vehicleData.msrp
       },
+      condition: vehicleCondition,
       analysis: claudeAnalysis, // This will be either structured JSON or raw text
       report_id: `VVP-${Date.now()}`,
       generated_by: 'VinValuation Pro API v1.0'
@@ -175,7 +187,7 @@ app.get('/api/sample-vins', (req, res) => {
 // Test endpoint that always uses mock responses
 app.post('/api/test-valuation', async (req, res) => {
   try {
-    const { vin } = req.body;
+    const { vin, condition } = req.body;
     
     // Validate VIN
     if (!isValidVIN(vin)) {
@@ -185,11 +197,22 @@ app.post('/api/test-valuation', async (req, res) => {
       });
     }
 
-    console.log(`🧪 Testing VIN: ${vin}`);
+    // Validate condition (optional but if provided, must be valid)
+    const validConditions = ['excellent', 'good', 'fair', 'poor'];
+    if (condition && !validConditions.includes(condition.toLowerCase())) {
+      return res.status(400).json({
+        error: 'Invalid condition',
+        message: 'Condition must be one of: excellent, good, fair, poor'
+      });
+    }
+
+    const vehicleCondition = condition ? condition.toLowerCase() : 'good'; // Default to good if not provided
+
+    console.log(`🧪 Testing VIN: ${vin} with condition: ${vehicleCondition}`);
 
     // Check if we have a mock response for this VIN
     if (hasMockResponse(vin)) {
-      const mockResponse = getMockResponse(vin);
+      const mockResponse = getMockResponse(vin, vehicleCondition);
       console.log('✅ Using mock response');
       return res.json(mockResponse);
     } else {

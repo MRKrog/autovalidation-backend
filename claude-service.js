@@ -19,8 +19,8 @@ const anthropic = new Anthropic({
 });
 
 // Claude API integration
-const analyzeVehicleWithClaude = async (vehicleData) => {
-  console.log('🧠 Generating vehicle analysis with Claude...');
+const analyzeVehicleWithClaude = async (vehicleData, condition = 'good') => {
+  console.log(`🧠 Generating vehicle analysis with Claude for condition: ${condition}...`);
   
   try {
     const prompt = `
@@ -37,6 +37,7 @@ Vehicle Details:
 - Drivetrain: ${vehicleData.drivetrain}
 - Fuel Type: ${vehicleData.fuel_type}
 - Manufacturing Country: ${vehicleData.made_in}
+- Condition: ${condition} (excellent/good/fair/poor)
 
 Please provide a JSON response with the following structure:
 
@@ -86,7 +87,15 @@ Please provide a JSON response with the following structure:
   }
 }
 
-Provide specific dollar amounts based on current market conditions. Ensure all values are realistic for the ${vehicleData.year} ${vehicleData.make} ${vehicleData.model}.
+Provide specific dollar amounts based on current market conditions and the vehicle's ${condition} condition. 
+
+Condition Impact Guidelines:
+- Excellent: +10-15% above base value
+- Good: Base market value (standard condition)
+- Fair: -10-15% below base value
+- Poor: -20-30% below base value
+
+Ensure all values are realistic for the ${vehicleData.year} ${vehicleData.make} ${vehicleData.model} in ${condition} condition.
 `;
 
     console.log('📝 Calling Claude API...');

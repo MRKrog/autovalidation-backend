@@ -187,18 +187,59 @@ const MOCK_RESPONSES = {
   }
 };
 
-// Helper function to get mock response
-const getMockResponse = (vin) => {
+// Helper function to get mock response with condition adjustment
+const getMockResponse = (vin, condition = 'good') => {
   const mockResponse = MOCK_RESPONSES[vin];
   if (mockResponse) {
+    // Adjust values based on condition
+    const adjustedResponse = adjustValuesForCondition(mockResponse, condition);
+    
     // Update timestamp to current time
     return {
-      ...mockResponse,
+      ...adjustedResponse,
       timestamp: new Date().toISOString(),
       report_id: `VVP-${Date.now()}`
     };
   }
   return null;
+};
+
+// Helper function to adjust values based on condition
+const adjustValuesForCondition = (response, condition) => {
+  const conditionMultipliers = {
+    'excellent': 1.12, // +12%
+    'good': 1.0,      // Base value
+    'fair': 0.88,     // -12%
+    'poor': 0.75      // -25%
+  };
+
+  const multiplier = conditionMultipliers[condition] || 1.0;
+  
+  // Deep clone the response
+  const adjustedResponse = JSON.parse(JSON.stringify(response));
+  
+  // Adjust market values
+  if (adjustedResponse.analysis && adjustedResponse.analysis.market_values) {
+    const marketValues = adjustedResponse.analysis.market_values;
+    
+    Object.keys(marketValues).forEach(key => {
+      if (marketValues[key].min && marketValues[key].max) {
+        marketValues[key].min = Math.round(marketValues[key].min * multiplier);
+        marketValues[key].max = Math.round(marketValues[key].max * multiplier);
+      }
+    });
+  }
+
+  // Update condition in the response
+  adjustedResponse.condition = condition;
+  
+  // Update summary to reflect condition
+  if (adjustedResponse.analysis && adjustedResponse.analysis.summary) {
+    adjustedResponse.analysis.summary.overall_assessment = 
+      `${adjustedResponse.analysis.summary.overall_assessment} (${condition} condition)`;
+  }
+
+  return adjustedResponse;
 };
 
 // Helper function to check if VIN has a mock response

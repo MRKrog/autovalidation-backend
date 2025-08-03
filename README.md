@@ -54,9 +54,16 @@ Main endpoint that processes a VIN and returns comprehensive valuation using Cla
 **Request:**
 ```json
 {
-  "vin": "1G1ZD5ST8JF134138"
+  "vin": "1G1ZD5ST8JF134138",
+  "condition": "good"
 }
 ```
+
+**Condition Options:**
+- `excellent` (+10-15% above base value)
+- `good` (base market value - default)
+- `fair` (-10-15% below base value)
+- `poor` (-20-30% below base value)
 
 **Response:**
 ```json
@@ -83,7 +90,8 @@ Fast testing endpoint that uses mock responses (no API costs).
 **Request:**
 ```json
 {
-  "vin": "1G1ZD5ST8JF134138"
+  "vin": "1G1ZD5ST8JF134138",
+  "condition": "good"
 }
 ```
 
