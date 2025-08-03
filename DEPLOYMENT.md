@@ -18,7 +18,9 @@ git push origin main
 5. Add environment variables:
    ```
    CLAUDE_API_KEY=sk-ant-api03-your-key-here
+   GROK_API_KEY=your-grok-api-key-here (optional)
    AUTO_DEV_API_KEY=your-auto-dev-key-here
+   AI_SERVICE=claude (or grok)
    PORT=3001
    NODE_ENV=production
    ```

@@ -34,7 +34,12 @@ CLAUDE_API_KEY=your_claude_api_key_here
 
 **Required API Keys:**
 - **Claude API Key**: Get from [console.anthropic.com](https://console.anthropic.com/)
+- **Grok API Key**: Get from [x.ai](https://x.ai/) (optional)
 - **Auto.dev API Key**: Get from [auto.dev](https://auto.dev/)
+
+**AI Service Configuration:**
+- Set `AI_SERVICE=claude` for Claude AI (default)
+- Set `AI_SERVICE=grok` for Grok AI
 
 ### 4. Start the Server
 
@@ -158,6 +163,7 @@ node test-api.js
 autovalidation-backend/
 ├── server.js              # Main Express server with routes
 ├── claude-service.js      # Claude AI integration module
+├── grok-service.js        # Grok AI integration module
 ├── test-responses.js      # Mock responses for testing
 ├── test-api.js           # Comprehensive API testing
 ├── package.json          # Dependencies and scripts
@@ -169,8 +175,9 @@ autovalidation-backend/
 
 ### Modular Architecture
 - **`claude-service.js`**: Handles all Claude AI interactions
+- **`grok-service.js`**: Handles all Grok AI interactions
 - **`test-responses.js`**: Mock data for development
-- **`server.js`**: Clean route handling and business logic
+- **`server.js`**: Clean route handling and business logic with AI service switching
 
 ### Adding Caching
 To reduce costs, add Redis caching for recent VIN lookups:

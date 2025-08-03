@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const axios = require('axios');
 const { analyzeVehicleWithClaude, checkClaudeHealth } = require('./claude-service');
+const { analyzeVehicleWithGrok, checkGrokHealth } = require('./grok-service');
 const { getMockResponse, hasMockResponse } = require('./test-responses');
 require('dotenv').config();
 
@@ -81,16 +82,25 @@ app.post('/api/valuation', async (req, res) => {
 
     console.log('Vehicle decoded successfully:', vehicleData.year, vehicleData.make, vehicleData.model);
 
-    // Step 2: Analyze with Claude (or use mock response in test mode)
-    let claudeAnalysis;
+    // Step 2: Analyze with AI (Claude or Grok) or use mock response in test mode
+    let aiAnalysis;
     
     // Check if we're in test mode and have a mock response
     if (process.env.NODE_ENV === 'test' && hasMockResponse(vin)) {
       console.log('🧪 Using mock response for testing');
       const mockResponse = getMockResponse(vin, vehicleCondition);
-      claudeAnalysis = mockResponse.analysis;
+      aiAnalysis = mockResponse.analysis;
     } else {
-      claudeAnalysis = await analyzeVehicleWithClaude(vehicleData, vehicleCondition);
+      // Choose AI service based on environment variable
+      const aiService = process.env.AI_SERVICE || 'claude'; // Default to Claude
+      
+      if (aiService.toLowerCase() === 'grok') {
+        console.log('🤖 Using Grok AI for analysis');
+        aiAnalysis = await analyzeVehicleWithGrok(vehicleData, vehicleCondition);
+      } else {
+        console.log('🧠 Using Claude AI for analysis');
+        aiAnalysis = await analyzeVehicleWithClaude(vehicleData, vehicleCondition);
+      }
     }
 
     // Step 3: Structure the response
@@ -112,7 +122,7 @@ app.post('/api/valuation', async (req, res) => {
         msrp: vehicleData.msrp
       },
       condition: vehicleCondition,
-      analysis: claudeAnalysis, // This will be either structured JSON or raw text
+      analysis: aiAnalysis, // This will be either structured JSON or raw text
       report_id: `VVP-${Date.now()}`,
       generated_by: 'VinValuation Pro API v1.0'
     };
@@ -143,11 +153,16 @@ app.post('/api/valuation', async (req, res) => {
 // Health check endpoint
 app.get('/api/health', (req, res) => {
   const claudeHealth = checkClaudeHealth();
+  const grokHealth = checkGrokHealth();
+  const aiService = process.env.AI_SERVICE || 'claude';
+  
   res.json({
     status: 'healthy',
     timestamp: new Date().toISOString(),
     version: '1.0.0',
-    claude: claudeHealth
+    ai_service: aiService,
+    claude: claudeHealth,
+    grok: grokHealth
   });
 });
 
