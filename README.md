@@ -1,6 +1,6 @@
 # VinValuation Pro Backend API
 
-A Node.js backend that combines VIN decoding with Claude AI market analysis to provide comprehensive vehicle valuations.
+A Node.js backend that combines VIN decoding with Claude AI market analysis to provide comprehensive vehicle valuations. Built with modular architecture and comprehensive testing capabilities.
 
 ## 🚀 Quick Start
 
@@ -11,19 +11,14 @@ A Node.js backend that combines VIN decoding with Claude AI market analysis to p
 ### 2. Setup
 
 ```bash
-# Create project directory
-mkdir vinvaluation-backend
+# Clone or create project directory
+git clone <your-repo> vinvaluation-backend
 cd vinvaluation-backend
 
-# Initialize npm and install dependencies
-npm init -y
-npm install express cors axios dotenv
-npm install -D nodemon
+# Install dependencies
+npm install
 
-# Create the files (copy the code from artifacts above)
-touch server.js test-api.js .env
-
-# Copy .env.example to .env and add your Claude API key
+# Create .env file with your API keys
 cp .env.example .env
 ```
 
@@ -33,9 +28,13 @@ Edit `.env` file:
 ```bash
 PORT=3001
 NODE_ENV=development
-AUTO_DEV_API_KEY=your_actual_auto_dev_api_key_here
-CLAUDE_API_KEY=your_actual_claude_api_key_here
+AUTO_DEV_API_KEY=your_auto_dev_api_key_here
+CLAUDE_API_KEY=your_claude_api_key_here
 ```
+
+**Required API Keys:**
+- **Claude API Key**: Get from [console.anthropic.com](https://console.anthropic.com/)
+- **Auto.dev API Key**: Get from [auto.dev](https://auto.dev/)
 
 ### 4. Start the Server
 
@@ -50,7 +49,7 @@ npm start
 ## 📡 API Endpoints
 
 ### POST `/api/valuation`
-Main endpoint that processes a VIN and returns comprehensive valuation.
+Main endpoint that processes a VIN and returns comprehensive valuation using Claude AI.
 
 **Request:**
 ```json
@@ -78,6 +77,21 @@ Main endpoint that processes a VIN and returns comprehensive valuation.
 }
 ```
 
+### POST `/api/test-valuation`
+Fast testing endpoint that uses mock responses (no API costs).
+
+**Request:**
+```json
+{
+  "vin": "1G1ZD5ST8JF134138"
+}
+```
+
+**Available Test VINs:**
+- `1G1ZD5ST8JF134138` - 2018 Chevrolet Malibu
+- `1HGBH41JXMN109186` - 2021 Honda Civic
+- `1FTFW1ET5DFC10312` - 2013 Ford F-150
+
 ### POST `/api/validate-vin`
 Free VIN validation (no API calls).
 
@@ -89,20 +103,34 @@ Free VIN validation (no API calls).
 ```
 
 ### GET `/api/health`
-Health check endpoint.
+Health check endpoint with Claude service status.
 
 ### GET `/api/sample-vins`
 Returns test VINs for development.
 
 ## 🧪 Testing
 
+### Quick Testing (No API Costs)
 ```bash
-# Run the test suite
+# Test with mock responses
+curl -X POST http://localhost:3001/api/test-valuation \
+  -H "Content-Type: application/json" \
+  -d '{"vin": "1G1ZD5ST8JF134138"}'
+```
+
+### Full Test Suite
+```bash
+# Run comprehensive tests
 npm test
 
 # Or run directly
 node test-api.js
 ```
+
+### Test Modes
+- **Development**: Uses real Claude API calls
+- **Test Mode**: Uses mock responses when `NODE_ENV=test`
+- **Mock Endpoint**: Always uses test data for fast development
 
 ## 💰 Cost Analysis
 
@@ -116,7 +144,25 @@ node test-api.js
 - **Dealer API:** $0.50-1.00 per request
 - **Enterprise:** Custom pricing
 
+## 🏗️ Project Structure
+
+```
+autovalidation-backend/
+├── server.js              # Main Express server with routes
+├── claude-service.js      # Claude AI integration module
+├── test-responses.js      # Mock responses for testing
+├── test-api.js           # Comprehensive API testing
+├── package.json          # Dependencies and scripts
+├── .env                  # Environment variables (not in git)
+└── README.md            # This file
+```
+
 ## 🔧 Development Tips
+
+### Modular Architecture
+- **`claude-service.js`**: Handles all Claude AI interactions
+- **`test-responses.js`**: Mock data for development
+- **`server.js`**: Clean route handling and business logic
 
 ### Adding Caching
 To reduce costs, add Redis caching for recent VIN lookups:
@@ -215,10 +261,30 @@ app.use((req, res, next) => {
 - **CDN:** CloudFlare for global distribution
 - **Load Balancer:** For high-traffic scenarios
 
+## 🚀 Features
+
+### ✅ **Core Functionality**
+- **VIN Decoding**: Extract vehicle specifications using auto.dev API
+- **AI Analysis**: Claude AI-powered market analysis and valuation
+- **Comprehensive Reports**: Detailed market values, trends, and recommendations
+- **Error Handling**: Robust error handling for all API interactions
+
+### ✅ **Development Features**
+- **Modular Architecture**: Clean separation of concerns
+- **Mock Testing**: Fast development without API costs
+- **Comprehensive Testing**: Full test suite with multiple scenarios
+- **Health Monitoring**: Service status and API key validation
+
+### ✅ **Production Ready**
+- **Environment Configuration**: Secure API key management
+- **CORS Support**: Cross-origin request handling
+- **Input Validation**: VIN format validation
+- **Response Formatting**: Consistent JSON responses
+
 ## 🤝 Next Steps
 
-1. **Test the API** with sample VINs
-2. **Add database** for storing results
+1. **Test the API** with sample VINs using `/api/test-valuation`
+2. **Add database** for storing results and building proprietary data
 3. **Build frontend** to consume this API
 4. **Add user authentication** for paid features
 5. **Implement caching** to reduce costs

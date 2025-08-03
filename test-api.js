@@ -91,6 +91,38 @@ async function testAPI() {
     }
   }
 
+  // Test 6: Mock valuation (fast testing)
+  console.log('\n5️⃣ Testing mock valuation (fast)...');
+  
+  try {
+    const testVin = TEST_VINS[0];
+    console.log(`🔍 Testing mock VIN: ${testVin}`);
+    
+    const start = Date.now();
+    const mockValuation = await axios.post(`${API_BASE}/test-valuation`, { 
+      vin: testVin 
+    });
+    
+    const duration = ((Date.now() - start) / 1000).toFixed(1);
+    
+    console.log(`✅ Mock valuation completed in ${duration} seconds`);
+    console.log('📊 Report ID:', mockValuation.data.report_id);
+    console.log('🚗 Vehicle:', `${mockValuation.data.vehicle.year} ${mockValuation.data.vehicle.make} ${mockValuation.data.vehicle.model}`);
+    console.log('📝 Analysis length:', mockValuation.data.market_analysis.length, 'characters');
+    
+    // Show first 200 chars of analysis
+    console.log('📋 Analysis preview:', 
+      mockValuation.data.market_analysis.substring(0, 200) + '...'
+    );
+    
+  } catch (error) {
+    if (error.response) {
+      console.log('❌ Mock valuation failed:', error.response.status, error.response.data);
+    } else {
+      console.log('❌ Mock valuation failed:', error.message);
+    }
+  }
+
   console.log('\n🏁 API testing complete!');
 }
 

@@ -1,6 +1,8 @@
 const express = require('express');
 const cors = require('cors');
 const axios = require('axios');
+const { analyzeVehicleWithClaude, checkClaudeHealth } = require('./claude-service');
+const { getMockResponse, hasMockResponse } = require('./test-responses');
 require('dotenv').config();
 
 const app = express();
@@ -11,7 +13,7 @@ app.use(cors());
 app.use(express.json());
 
 // Environment variables needed:
-// AUTO_DEV_API_KEY=ZrQEPSkKbWtyb2djcnlwdG9AZ21haWwuY29t
+// AUTO_DEV_API_KEY=your_auto_dev_api_key_here
 // CLAUDE_API_KEY=your_claude_api_key_here
 
 // VIN validation helper
@@ -19,77 +21,7 @@ const isValidVIN = (vin) => {
   return vin && vin.length === 17 && /^[A-HJ-NPR-Z0-9]{17}$/i.test(vin);
 };
 
-// Claude API integration
-const analyzeVehicleWithClaude = async (vehicleData) => {
-  try {
-    const prompt = `
-You are a professional automotive appraiser and market analyst. Analyze this vehicle and provide a comprehensive valuation report.
 
-Vehicle Details:
-- Year: ${vehicleData.year}
-- Make: ${vehicleData.make}
-- Model: ${vehicleData.model}
-- Trim: ${vehicleData.trim || 'Base'}
-- Engine: ${vehicleData.engine}
-- Transmission: ${vehicleData.transmission}
-- Body Style: ${vehicleData.style}
-- Drivetrain: ${vehicleData.drivetrain}
-- Fuel Type: ${vehicleData.fuel_type}
-- Manufacturing Country: ${vehicleData.made_in}
-
-Please provide:
-1. Current Market Values (as of ${new Date().toLocaleDateString()}):
-   - Retail Value (dealer lot price)
-   - Private Party Value (individual seller)
-   - Trade-in Value (dealer trade)
-
-2. Market Analysis:
-   - Current market demand (High/Medium/Low)
-   - Price trend over last 12 months
-   - Regional variations to consider
-
-3. Key Factors Affecting Value:
-   - Vehicle condition impact
-   - Mileage considerations for this model year
-   - Common issues or recalls for this vehicle
-   - Resale value outlook
-
-4. Strategic Recommendations:
-   - Best time to sell/buy
-   - Negotiation talking points
-   - Market positioning vs competitors
-
-5. Risk Assessment:
-   - Reliability concerns
-   - Depreciation outlook
-   - Market saturation
-
-Please provide specific dollar amounts based on current market conditions and format your response as a detailed professional report.
-`;
-
-    const response = await axios.post('https://api.anthropic.com/v1/messages', {
-      model: 'claude-3-sonnet-20240229',
-      max_tokens: 2000,
-      messages: [
-        {
-          role: 'user',
-          content: prompt
-        }
-      ]
-    }, {
-      headers: {
-        'Authorization': `Bearer ${process.env.CLAUDE_API_KEY}`,
-        'Content-Type': 'application/json',
-        'x-api-key': process.env.CLAUDE_API_KEY
-      }
-    });
-
-    return response.data.content[0].text;
-  } catch (error) {
-    console.error('Claude API Error:', error.response?.data || error.message);
-    throw new Error('Failed to analyze vehicle with Claude');
-  }
-};
 
 // Main VIN valuation endpoint
 app.post('/api/valuation', async (req, res) => {
@@ -121,10 +53,34 @@ app.post('/api/valuation', async (req, res) => {
       });
     }
 
-    console.log('Vehicle decoded successfully:', vehicleSpecs.year, vehicleSpecs.make, vehicleSpecs.model);
+    // Handle different response formats from auto.dev API
+    const vehicleData = {
+      year: vehicleSpecs.year || vehicleSpecs.years?.[0]?.year,
+      make: vehicleSpecs.make?.name || vehicleSpecs.make,
+      model: vehicleSpecs.model?.name || vehicleSpecs.model,
+      trim: vehicleSpecs.trim?.name || vehicleSpecs.trim,
+      style: vehicleSpecs.style?.name || vehicleSpecs.style,
+      engine: vehicleSpecs.engine?.name || vehicleSpecs.engine,
+      transmission: vehicleSpecs.transmission?.name || vehicleSpecs.transmission,
+      drivetrain: vehicleSpecs.drivetrain?.name || vehicleSpecs.drivetrain,
+      fuel_type: vehicleSpecs.fuel_type?.name || vehicleSpecs.fuel_type,
+      made_in: vehicleSpecs.made_in || 'Unknown',
+      msrp: vehicleSpecs.msrp || 'Unknown'
+    };
 
-    // Step 2: Analyze with Claude
-    const claudeAnalysis = await analyzeVehicleWithClaude(vehicleSpecs);
+    console.log('Vehicle decoded successfully:', vehicleData.year, vehicleData.make, vehicleData.model);
+
+    // Step 2: Analyze with Claude (or use mock response in test mode)
+    let claudeAnalysis;
+    
+    // Check if we're in test mode and have a mock response
+    if (process.env.NODE_ENV === 'test' && hasMockResponse(vin)) {
+      console.log('🧪 Using mock response for testing');
+      const mockResponse = getMockResponse(vin);
+      claudeAnalysis = mockResponse.market_analysis;
+    } else {
+      claudeAnalysis = await analyzeVehicleWithClaude(vehicleData);
+    }
 
     // Step 3: Structure the response
     const valuationReport = {
@@ -132,17 +88,17 @@ app.post('/api/valuation', async (req, res) => {
       timestamp: new Date().toISOString(),
       vin: vin.toUpperCase(),
       vehicle: {
-        year: vehicleSpecs.year,
-        make: vehicleSpecs.make,
-        model: vehicleSpecs.model,
-        trim: vehicleSpecs.trim,
-        style: vehicleSpecs.style,
-        engine: vehicleSpecs.engine,
-        transmission: vehicleSpecs.transmission,
-        drivetrain: vehicleSpecs.drivetrain,
-        fuel_type: vehicleSpecs.fuel_type,
-        made_in: vehicleSpecs.made_in,
-        msrp: vehicleSpecs.msrp
+        year: vehicleData.year,
+        make: vehicleData.make,
+        model: vehicleData.model,
+        trim: vehicleData.trim,
+        style: vehicleData.style,
+        engine: vehicleData.engine,
+        transmission: vehicleData.transmission,
+        drivetrain: vehicleData.drivetrain,
+        fuel_type: vehicleData.fuel_type,
+        made_in: vehicleData.made_in,
+        msrp: vehicleData.msrp
       },
       market_analysis: claudeAnalysis,
       report_id: `VVP-${Date.now()}`,
@@ -174,10 +130,12 @@ app.post('/api/valuation', async (req, res) => {
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
+  const claudeHealth = checkClaudeHealth();
   res.json({
     status: 'healthy',
     timestamp: new Date().toISOString(),
-    version: '1.0.0'
+    version: '1.0.0',
+    claude: claudeHealth
   });
 });
 
@@ -212,6 +170,43 @@ app.get('/api/sample-vins', (req, res) => {
       }
     ]
   });
+});
+
+// Test endpoint that always uses mock responses
+app.post('/api/test-valuation', async (req, res) => {
+  try {
+    const { vin } = req.body;
+    
+    // Validate VIN
+    if (!isValidVIN(vin)) {
+      return res.status(400).json({
+        error: 'Invalid VIN',
+        message: 'VIN must be exactly 17 characters and contain only valid characters'
+      });
+    }
+
+    console.log(`🧪 Testing VIN: ${vin}`);
+
+    // Check if we have a mock response for this VIN
+    if (hasMockResponse(vin)) {
+      const mockResponse = getMockResponse(vin);
+      console.log('✅ Using mock response');
+      return res.json(mockResponse);
+    } else {
+      return res.status(404).json({
+        error: 'No test data available',
+        message: `No mock response available for VIN: ${vin}`,
+        available_test_vins: Object.keys(require('./test-responses').MOCK_RESPONSES)
+      });
+    }
+
+  } catch (error) {
+    console.error('Test API Error:', error);
+    res.status(500).json({
+      error: 'Internal Server Error',
+      message: 'Something went wrong processing your test request'
+    });
+  }
 });
 
 // Error handling middleware
