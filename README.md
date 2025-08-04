@@ -164,6 +164,7 @@ autovalidation-backend/
 ├── server.js              # Main Express server with routes
 ├── claude-service.js      # Claude AI integration module
 ├── grok-service.js        # Grok AI integration module
+├── ai-prompts.js          # Shared AI prompts for both services
 ├── test-responses.js      # Mock responses for testing
 ├── test-api.js           # Comprehensive API testing
 ├── package.json          # Dependencies and scripts
@@ -176,6 +177,7 @@ autovalidation-backend/
 ### Modular Architecture
 - **`claude-service.js`**: Handles all Claude AI interactions
 - **`grok-service.js`**: Handles all Grok AI interactions
+- **`ai-prompts.js`**: Shared prompts for consistent AI responses
 - **`test-responses.js`**: Mock data for development
 - **`server.js`**: Clean route handling and business logic with AI service switching
 

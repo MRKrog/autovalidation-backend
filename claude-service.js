@@ -1,4 +1,6 @@
 const Anthropic = require('@anthropic-ai/sdk');
+const { buildVehicleValuationPrompt } = require('./ai-prompts');
+
 require('dotenv').config(); // Ensure dotenv is loaded
 
 // Initialize Anthropic client
@@ -23,80 +25,7 @@ const analyzeVehicleWithClaude = async (vehicleData, condition = 'good') => {
   console.log(`🧠 Generating vehicle analysis with Claude for condition: ${condition}...`);
   
   try {
-    const prompt = `
-You are a professional automotive appraiser and market analyst. Analyze this vehicle and provide a comprehensive valuation report in JSON format.
-
-Vehicle Details:
-- Year: ${vehicleData.year}
-- Make: ${vehicleData.make}
-- Model: ${vehicleData.model}
-- Trim: ${vehicleData.trim || 'Base'}
-- Engine: ${vehicleData.engine}
-- Transmission: ${vehicleData.transmission}
-- Body Style: ${vehicleData.style}
-- Drivetrain: ${vehicleData.drivetrain}
-- Fuel Type: ${vehicleData.fuel_type}
-- Manufacturing Country: ${vehicleData.made_in}
-- Condition: ${condition} (excellent/good/fair/poor)
-
-Please provide a JSON response with the following structure:
-
-{
-  "market_values": {
-    "retail_value": {
-      "min": 13500,
-      "max": 15200,
-      "description": "Dealer lot price"
-    },
-    "private_party_value": {
-      "min": 12000,
-      "max": 13800,
-      "description": "Individual seller price"
-    },
-    "trade_in_value": {
-      "min": 10500,
-      "max": 11900,
-      "description": "Dealer trade value"
-    }
-  },
-  "market_analysis": {
-    "demand_level": "Medium",
-    "price_trend": "Stable with slight upward trend",
-    "regional_variations": "Coastal regions may see higher prices"
-  },
-  "key_factors": {
-    "condition_impact": "Well-maintained vehicles command higher prices",
-    "mileage_considerations": "Average 12,000 miles per year expected",
-    "common_issues": "Minor recalls addressed by manufacturer",
-    "resale_outlook": "40-50% value retention after 5 years"
-  },
-  "strategic_recommendations": {
-    "best_time": "Current market is favorable",
-    "negotiation_points": "Highlight maintenance and low mileage",
-    "market_positioning": "Competitive against Accord and Camry"
-  },
-  "risk_assessment": {
-    "reliability_concerns": "Generally reliable with few major issues",
-    "depreciation_outlook": "Average depreciation rates",
-    "market_saturation": "Balanced supply and demand"
-  },
-  "summary": {
-    "overall_assessment": "Solid vehicle with stable market outlook",
-    "recommended_action": "Good time to buy or sell",
-    "confidence_level": "High"
-  }
-}
-
-Provide specific dollar amounts based on current market conditions and the vehicle's ${condition} condition. 
-
-Condition Impact Guidelines:
-- Excellent: +10-15% above base value
-- Good: Base market value (standard condition)
-- Fair: -10-15% below base value
-- Poor: -20-30% below base value
-
-Ensure all values are realistic for the ${vehicleData.year} ${vehicleData.make} ${vehicleData.model} in ${condition} condition.
-`;
+    const prompt = buildVehicleValuationPrompt(vehicleData, condition);
 
     console.log('📝 Calling Claude API...');
     const response = await anthropic.messages.create({

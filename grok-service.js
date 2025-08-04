@@ -1,4 +1,5 @@
 const axios = require('axios');
+const { buildEnhancedVehicleValuationPrompt, validateAIValuation } = require('./ai-prompts');
 require('dotenv').config(); // Ensure dotenv is loaded
 
 // Initialize Grok API configuration
@@ -14,96 +15,24 @@ if (!grokApiKey) {
   console.warn('⚠️ GROK_API_KEY environment variable is not set');
 }
 
-// Grok API integration
-const analyzeVehicleWithGrok = async (vehicleData, condition = 'good') => {
-  console.log(`🧠 Generating vehicle analysis with Grok for condition: ${condition}...`);
+// Enhanced Grok API integration with validation
+const analyzeVehicleWithGrok = async (vehicleData, condition = 'good', marketData = null) => {
+  console.log(`🧠 Generating enhanced vehicle analysis with Grok for condition: ${condition}...`);
   
   try {
-    const prompt = `
-You are a professional automotive appraiser and market analyst. Analyze this vehicle and provide a comprehensive valuation report in JSON format.
+    // Use the enhanced prompt instead of basic one
+    const prompt = buildEnhancedVehicleValuationPrompt(vehicleData, condition, marketData);
 
-Vehicle Details:
-- Year: ${vehicleData.year}
-- Make: ${vehicleData.make}
-- Model: ${vehicleData.model}
-- Trim: ${vehicleData.trim || 'Base'}
-- Engine: ${vehicleData.engine}
-- Transmission: ${vehicleData.transmission}
-- Body Style: ${vehicleData.style}
-- Drivetrain: ${vehicleData.drivetrain}
-- Fuel Type: ${vehicleData.fuel_type}
-- Manufacturing Country: ${vehicleData.made_in}
-- Condition: ${condition} (excellent/good/fair/poor)
-
-Please provide a JSON response with the following structure:
-
-{
-  "market_values": {
-    "retail_value": {
-      "min": 13500,
-      "max": 15200,
-      "description": "Dealer lot price"
-    },
-    "private_party_value": {
-      "min": 12000,
-      "max": 13800,
-      "description": "Individual seller price"
-    },
-    "trade_in_value": {
-      "min": 10500,
-      "max": 11900,
-      "description": "Dealer trade value"
-    }
-  },
-  "market_analysis": {
-    "demand_level": "Medium",
-    "price_trend": "Stable with slight upward trend",
-    "regional_variations": "Coastal regions may see higher prices"
-  },
-  "key_factors": {
-    "condition_impact": "Well-maintained vehicles command higher prices",
-    "mileage_considerations": "Average 12,000 miles per year expected",
-    "common_issues": "Minor recalls addressed by manufacturer",
-    "resale_outlook": "40-50% value retention after 5 years"
-  },
-  "strategic_recommendations": {
-    "best_time": "Current market is favorable",
-    "negotiation_points": "Highlight maintenance and low mileage",
-    "market_positioning": "Competitive against Accord and Camry"
-  },
-  "risk_assessment": {
-    "reliability_concerns": "Generally reliable with few major issues",
-    "depreciation_outlook": "Average depreciation rates",
-    "market_saturation": "Balanced supply and demand"
-  },
-  "summary": {
-    "overall_assessment": "Solid vehicle with stable market outlook",
-    "recommended_action": "Good time to buy or sell",
-    "confidence_level": "High"
-  }
-}
-
-Provide specific dollar amounts based on current market conditions and the vehicle's ${condition} condition. 
-
-Condition Impact Guidelines:
-- Excellent: +10-15% above base value
-- Good: Base market value (standard condition)
-- Fair: -10-15% below base value
-- Poor: -20-30% below base value
-
-Ensure all values are realistic for the ${vehicleData.year} ${vehicleData.make} ${vehicleData.model} in ${condition} condition.
-`;
-
-    console.log('📝 Calling Grok API...');
+    console.log('📝 Calling Grok API with enhanced prompt...');
     
-    // Note: Replace with actual Grok API endpoint and format
-    const response = await axios.post('https://api.grok.x.ai/v1/chat/completions', {
-      model: 'grok-4-0709', // grok-3-mini // grok-3
+    // Grok API endpoint and configuration
+    const response = await axios.post('https://api.x.ai/v1/chat/completions', {
+      model: 'grok-3', // Available models: grok-beta, grok-3-mini, grok-3, grok-4-0709
       messages: [{
         role: 'user',
         content: prompt
       }],
-      max_tokens: 2000,
+      max_tokens: 3000, // Increased for enhanced response
       temperature: 0.7
     }, {
       headers: {
@@ -119,7 +48,7 @@ Ensure all values are realistic for the ${vehicleData.year} ${vehicleData.make} 
     });
 
     const analysis = response.data?.choices?.[0]?.message?.content;
-    console.log(`📝 Analysis generated: ${analysis?.length || 0} characters`);
+    console.log(`📝 Enhanced analysis generated: ${analysis?.length || 0} characters`);
 
     // Try to parse the JSON response
     try {
@@ -127,19 +56,43 @@ Ensure all values are realistic for the ${vehicleData.year} ${vehicleData.make} 
       const jsonMatch = analysis.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
         const parsedAnalysis = JSON.parse(jsonMatch[0]);
-        console.log('✅ Successfully parsed structured analysis');
-        return parsedAnalysis;
+        console.log('✅ Successfully parsed enhanced structured analysis');
+        
+        // Validate the AI-generated valuation
+        const validation = validateAIValuation(parsedAnalysis, vehicleData, marketData);
+        
+        // Add validation results to the response
+        const enhancedResult = {
+          ...parsedAnalysis,
+          validation: {
+            is_valid: validation.isValid,
+            confidence: validation.confidence,
+            warnings: validation.warnings,
+            errors: validation.errors,
+            ...(validation.adjustments && { suggested_adjustments: validation.adjustments })
+          }
+        };
+        
+        if (validation.warnings.length > 0) {
+          console.log('⚠️ Validation warnings:', validation.warnings);
+        }
+        
+        if (validation.errors.length > 0) {
+          console.log('❌ Validation errors:', validation.errors);
+        }
+        
+        return enhancedResult;
       } else {
-        console.log('⚠️ No JSON found in response, returning raw text');
+        console.log('⚠️ No JSON found in enhanced response, returning raw text');
         return analysis;
       }
     } catch (parseError) {
-      console.log('⚠️ Failed to parse JSON, returning raw text:', parseError.message);
+      console.log('⚠️ Failed to parse enhanced JSON, returning raw text:', parseError.message);
       return analysis;
     }
     
   } catch (error) {
-    console.error('❌ Grok API error:', error);
+    console.error('❌ Enhanced Grok API error:', error);
     
     // Handle specific Grok API errors
     if (error.response?.status === 429) {
@@ -149,8 +102,52 @@ Ensure all values are realistic for the ${vehicleData.year} ${vehicleData.make} 
     } else if (error.response?.status === 400) {
       throw new Error('Invalid request to Grok API');
     } else {
-      throw new Error(`Grok generation failed: ${error.message}`);
+      throw new Error(`Enhanced Grok generation failed: ${error.message}`);
     }
+  }
+};
+
+// Optional: Keep the basic version as a fallback
+const analyzeVehicleWithGrokBasic = async (vehicleData, condition = 'good') => {
+  console.log(`🧠 Generating basic vehicle analysis with Grok for condition: ${condition}...`);
+  
+  try {
+    const { buildVehicleValuationPrompt } = require('./ai-prompts');
+    const prompt = buildVehicleValuationPrompt(vehicleData, condition);
+
+    console.log('📝 Calling Grok API with basic prompt...');
+    
+    const response = await axios.post('https://api.x.ai/v1/chat/completions', {
+      model: 'grok-3',
+      messages: [{
+        role: 'user',
+        content: prompt
+      }],
+      max_tokens: 2000,
+      temperature: 0.7
+    }, {
+      headers: {
+        'Authorization': `Bearer ${grokApiKey}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    const analysis = response.data?.choices?.[0]?.message?.content;
+    
+    try {
+      const jsonMatch = analysis.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        return JSON.parse(jsonMatch[0]);
+      } else {
+        return analysis;
+      }
+    } catch (parseError) {
+      return analysis;
+    }
+    
+  } catch (error) {
+    console.error('❌ Basic Grok API error:', error);
+    throw new Error(`Basic Grok generation failed: ${error.message}`);
   }
 };
 
@@ -159,11 +156,14 @@ const checkGrokHealth = () => {
   return {
     apiKeyConfigured: !!process.env.GROK_API_KEY,
     grokInitialized: !!grokApiKey,
+    enhancedPromptAvailable: true,
+    validationEnabled: true,
     timestamp: new Date().toISOString()
   };
 };
 
 module.exports = {
-  analyzeVehicleWithGrok,
+  analyzeVehicleWithGrok, // Now uses enhanced prompt by default
+  analyzeVehicleWithGrokBasic, // Fallback to basic prompt if needed
   checkGrokHealth
-}; 
+};
