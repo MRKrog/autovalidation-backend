@@ -188,6 +188,7 @@ const MOCK_RESPONSES = {
     "report_id": "VVP-1754185564244",
     "generated_by": "VinValuation Pro API v1.0"
   },
+  
   // Subaru WRX STI
   'JF1GR8H6XBL831881': {
     "success": true,

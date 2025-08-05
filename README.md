@@ -1,12 +1,13 @@
 # VinValuation Pro Backend API
 
-A Node.js backend that combines VIN decoding with Claude AI market analysis to provide comprehensive vehicle valuations. Built with modular architecture and comprehensive testing capabilities.
+A Node.js backend that combines VIN decoding with AI-powered market analysis (Claude & Grok) to provide comprehensive vehicle valuations. Built with modular architecture, enhanced prompts, and comprehensive testing capabilities.
 
 ## 🚀 Quick Start
 
 ### 1. Prerequisites
 - Node.js 18+ installed
 - Claude API key from [console.anthropic.com](https://console.anthropic.com/)
+- Grok API key from [x.ai](https://x.ai/) (optional)
 
 ### 2. Setup
 
@@ -41,6 +42,12 @@ CLAUDE_API_KEY=your_claude_api_key_here
 - Set `AI_SERVICE=claude` for Claude AI (default)
 - Set `AI_SERVICE=grok` for Grok AI
 
+**Enhanced Features:**
+- **Shared AI Prompts**: Consistent analysis across both AI services
+- **Condition-Based Pricing**: Dynamic value adjustments based on vehicle condition
+- **Performance Vehicle Analysis**: Specialized analysis for high-performance vehicles
+- **Enhanced Validation**: AI response validation and confidence scoring
+
 ### 4. Start the Server
 
 ```bash
@@ -54,7 +61,7 @@ npm start
 ## 📡 API Endpoints
 
 ### POST `/api/valuation`
-Main endpoint that processes a VIN and returns comprehensive valuation using Claude AI.
+Main endpoint that processes a VIN and returns comprehensive valuation using AI (Claude or Grok).
 
 **Request:**
 ```json
@@ -82,9 +89,31 @@ Main endpoint that processes a VIN and returns comprehensive valuation using Cla
     "model": "Malibu",
     "trim": "LT",
     "engine": "1.5L Turbo",
-    "transmission": "6-Speed Automatic"
+    "transmission": "6-Speed Automatic",
+    "engine_specs": { "horsepower": 163, "torque": 184 },
+    "mpg": { "city": "27", "highway": "36" },
+    "categories": { "market": "Mainstream" }
   },
-  "market_analysis": "Detailed Claude analysis...",
+  "condition": "good",
+  "analysis": {
+    "market_values": {
+      "retail_value": { "min": 14500, "max": 16800 },
+      "private_party_value": { "min": 13200, "max": 15300 },
+      "trade_in_value": { "min": 11800, "max": 13500 }
+    },
+    "performance_factors": {
+      "engine_premium": "Efficient turbo engine adds value",
+      "drivetrain_impact": "Standard FWD configuration"
+    },
+    "market_analysis": {
+      "demand_level": "Medium",
+      "price_trend": "Stable with slight upward trend"
+    },
+    "validation": {
+      "is_valid": true,
+      "confidence": "high"
+    }
+  },
   "report_id": "VVP-1234567890"
 }
 ```
@@ -102,8 +131,9 @@ Fast testing endpoint that uses mock responses (no API costs).
 
 **Available Test VINs:**
 - `1G1ZD5ST8JF134138` - 2018 Chevrolet Malibu
-- `1HGBH41JXMN109186` - 2021 Honda Civic
+- `1HGBH41JXMN109186` - 2021 Honda Civic  
 - `1FTFW1ET5DFC10312` - 2013 Ford F-150
+- `JF1GR8H6XBL831881` - 2011 Subaru WRX STI (Enhanced Performance Analysis)
 
 ### POST `/api/validate-vin`
 Free VIN validation (no API calls).
@@ -116,7 +146,7 @@ Free VIN validation (no API calls).
 ```
 
 ### GET `/api/health`
-Health check endpoint with Claude service status.
+Health check endpoint with AI service status and enhanced features.
 
 ### GET `/api/sample-vins`
 Returns test VINs for development.
@@ -141,16 +171,18 @@ node test-api.js
 ```
 
 ### Test Modes
-- **Development**: Uses real Claude API calls
+- **Development**: Uses real AI API calls (Claude or Grok)
 - **Test Mode**: Uses mock responses when `NODE_ENV=test`
 - **Mock Endpoint**: Always uses test data for fast development
+- **Enhanced Testing**: Performance vehicle analysis with condition-specific adjustments
 
 ## 💰 Cost Analysis
 
 ### Per Request Costs:
 - **Auto.dev API:** Free (included in their plan)
 - **Claude API:** ~$0.08-0.15 per request
-- **Total Cost:** ~$0.10 per valuation
+- **Grok API:** ~$0.05-0.12 per request (typically cheaper)
+- **Total Cost:** ~$0.08-0.15 per valuation (depending on AI service)
 
 ### Pricing Strategy:
 - **Consumer Reports:** $4.99 (98% profit margin)
@@ -161,11 +193,11 @@ node test-api.js
 
 ```
 autovalidation-backend/
-├── server.js              # Main Express server with routes
+├── server.js              # Main Express server with enhanced routes
 ├── claude-service.js      # Claude AI integration module
-├── grok-service.js        # Grok AI integration module
-├── ai-prompts.js          # Shared AI prompts for both services
-├── test-responses.js      # Mock responses for testing
+├── grok-service.js        # Grok AI integration module (enhanced)
+├── ai-prompts.js          # Shared AI prompts for consistent analysis
+├── test-responses.js      # Mock responses with condition adjustments
 ├── test-api.js           # Comprehensive API testing
 ├── package.json          # Dependencies and scripts
 ├── .env                  # Environment variables (not in git)
@@ -175,11 +207,11 @@ autovalidation-backend/
 ## 🔧 Development Tips
 
 ### Modular Architecture
-- **`claude-service.js`**: Handles all Claude AI interactions
-- **`grok-service.js`**: Handles all Grok AI interactions
-- **`ai-prompts.js`**: Shared prompts for consistent AI responses
-- **`test-responses.js`**: Mock data for development
-- **`server.js`**: Clean route handling and business logic with AI service switching
+- **`claude-service.js`**: Handles all Claude AI interactions with shared prompts
+- **`grok-service.js`**: Enhanced Grok AI integration with validation and performance analysis
+- **`ai-prompts.js`**: Shared prompts for consistent analysis across both AI services
+- **`test-responses.js`**: Mock data with condition-specific adjustments and performance vehicle analysis
+- **`server.js`**: Enhanced route handling with AI service switching and structured vehicle data
 
 ### Adding Caching
 To reduce costs, add Redis caching for recent VIN lookups:
@@ -282,32 +314,67 @@ app.use((req, res, next) => {
 
 ### ✅ **Core Functionality**
 - **VIN Decoding**: Extract vehicle specifications using auto.dev API
-- **AI Analysis**: Claude AI-powered market analysis and valuation
-- **Comprehensive Reports**: Detailed market values, trends, and recommendations
-- **Error Handling**: Robust error handling for all API interactions
+- **AI Analysis**: Claude & Grok AI-powered market analysis and valuation
+- **Enhanced Reports**: Detailed market values, performance factors, and recommendations
+- **Condition-Based Pricing**: Dynamic value adjustments based on vehicle condition
+- **Performance Vehicle Analysis**: Specialized analysis for high-performance vehicles
+- **AI Response Validation**: Confidence scoring and validation for AI-generated analysis
 
 ### ✅ **Development Features**
-- **Modular Architecture**: Clean separation of concerns
+- **Modular Architecture**: Clean separation of concerns with shared prompts
 - **Mock Testing**: Fast development without API costs
-- **Comprehensive Testing**: Full test suite with multiple scenarios
-- **Health Monitoring**: Service status and API key validation
+- **Enhanced Testing**: Performance vehicle analysis with condition-specific adjustments
+- **Health Monitoring**: Service status and AI service validation
+- **AI Service Switching**: Easy switching between Claude and Grok
 
 ### ✅ **Production Ready**
-- **Environment Configuration**: Secure API key management
+- **Environment Configuration**: Secure API key management for multiple services
 - **CORS Support**: Cross-origin request handling
-- **Input Validation**: VIN format validation
-- **Response Formatting**: Consistent JSON responses
+- **Input Validation**: VIN format and condition validation
+- **Enhanced Response Formatting**: Structured JSON with validation and confidence scoring
+- **AI Service Fallbacks**: Graceful handling of AI service failures
 
 ## 🤝 Next Steps
 
-1. **Test the API** with sample VINs using `/api/test-valuation`
-2. **Add database** for storing results and building proprietary data
-3. **Build frontend** to consume this API
-4. **Add user authentication** for paid features
-5. **Implement caching** to reduce costs
-6. **Add monitoring** and analytics
-7. **Deploy to production** platform
+1. **Test the Enhanced API** with performance vehicles using `/api/test-valuation`
+2. **Compare AI Services** by switching between Claude and Grok
+3. **Add database** for storing results and building proprietary data
+4. **Build frontend** to consume this enhanced API
+5. **Add user authentication** for paid features
+6. **Implement caching** to reduce costs
+7. **Add monitoring** and analytics
+8. **Deploy to production** platform
+
+## 🎯 Enhanced Testing Examples
+
+### Test Performance Vehicle Analysis:
+```bash
+# Test Subaru WRX STI with different conditions
+curl -X POST https://your-api.railway.app/api/test-valuation \
+  -H "Content-Type: application/json" \
+  -d '{"vin": "JF1GR8H6XBL831881", "condition": "excellent"}'
+
+# Test condition adjustments
+curl -X POST https://your-api.railway.app/api/test-valuation \
+  -H "Content-Type: application/json" \
+  -d '{"vin": "JF1GR8H6XBL831881", "condition": "poor"}'
+```
+
+### Test AI Service Switching:
+```bash
+# Test with Claude (default)
+export AI_SERVICE=claude
+curl -X POST https://your-api.railway.app/api/valuation \
+  -H "Content-Type: application/json" \
+  -d '{"vin": "1G1ZD5ST8JF134138", "condition": "good"}'
+
+# Test with Grok
+export AI_SERVICE=grok
+curl -X POST https://your-api.railway.app/api/valuation \
+  -H "Content-Type: application/json" \
+  -d '{"vin": "1G1ZD5ST8JF134138", "condition": "good"}'
+```
 
 ---
 
-**Ready to start making money with vehicle valuations! 🚗💰**
+**Ready to start making money with enhanced vehicle valuations! 🚗💰🤖**

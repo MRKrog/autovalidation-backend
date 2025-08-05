@@ -1,5 +1,6 @@
 const axios = require('axios');
-const { buildEnhancedVehicleValuationPrompt, validateAIValuation } = require('./ai-prompts');
+const { buildEnhancedReasoningPrompt, buildVehicleValuationPrompt, validateAIValuation } = require('./ai-prompts');
+const { SimpleTokenCounter } = require('./pricing/estimate-prompt-cost');
 require('dotenv').config(); // Ensure dotenv is loaded
 
 // Initialize Grok API configuration
@@ -16,41 +17,53 @@ if (!grokApiKey) {
 }
 
 // Enhanced Grok API integration with validation
-const analyzeVehicleWithGrok = async (vehicleData, condition = 'good', marketData = null) => {
-  console.log(`🧠 Generating enhanced vehicle analysis with Grok for condition: ${condition}...`);
+const analyzeVehicleWithGrok = async (vehicleData, condition = 'good', marketData = null, actualMileage = null) => {
+  console.log(`🧠 Generating enhanced vehicle analysis with Grok for condition:`);
   
   try {
-    // Use the enhanced prompt instead of basic one
-    const prompt = buildEnhancedVehicleValuationPrompt(vehicleData, condition, marketData);
+    const prompt = buildEnhancedReasoningPrompt(vehicleData, condition, marketData, actualMileage);
+    // const prompt = buildEnhancedVehicleValuationPrompt(vehicleData, condition, marketData);
 
-    console.log('📝 Calling Grok API with enhanced prompt...');
-    
-    // Grok API endpoint and configuration
+    // grok-mini, grok-3, grok-4
+    const model = 'grok-4';
+    // const model = 'grok-3-mini';
+
+    // console.log('prompt', prompt);
+
+    SimpleTokenCounter.estimateCost(model, prompt); // Estimate cost before making request
+
+    // Grok API call
     const response = await axios.post('https://api.x.ai/v1/chat/completions', {
-      model: 'grok-3', // Available models: grok-beta, grok-3-mini, grok-3, grok-4-0709
+      model: model,
       messages: [{
+        role: 'system',
+        content: 'You are a professional automotive appraiser. Provide accurate, realistic vehicle valuations based on current market conditions. Always respond with valid JSON in the exact format requested.'
+      }, {
         role: 'user',
         content: prompt
       }],
-      max_tokens: 3000, // Increased for enhanced response
-      temperature: 0.7
+      max_tokens: 4000,
+      temperature: 0.3 // Temperature controls AI response randomness: 0.0 = Most deterministic, consistent responses || 1.0 = Most creative, varied responses ||0.3 = Balanced approach - consistent but with some flexibility
     }, {
       headers: {
-        'Authorization': `Bearer ${grokApiKey}`,
+        'Authorization': `Bearer ${process.env.GROK_API_KEY}`,
         'Content-Type': 'application/json'
       }
-    });
-
-    console.log('📦 Grok API response received:', {
-      hasContent: !!response.data?.choices,
-      contentLength: response.data?.choices?.[0]?.message?.content?.length,
-      hasUsage: !!response.data?.usage
     });
 
     const analysis = response.data?.choices?.[0]?.message?.content;
     console.log(`📝 Enhanced analysis generated: ${analysis?.length || 0} characters`);
 
-    // Try to parse the JSON response
+    // 🎯 LOG TOKEN USAGE AND COST HERE
+    const vehicleInfo = `${vehicleData.year} ${vehicleData.make?.name} ${vehicleData.model?.name}${actualMileage ? ` (${actualMileage.toLocaleString()} mi)` : ''}`;
+
+    SimpleTokenCounter.logTokenUsage(model, prompt, analysis, {
+      vehicleInfo: vehicleInfo,
+      condition: condition,
+      hasActualMileage: actualMileage !== null,
+      requestType: 'vehicle_valuation'
+    });
+
     try {
       // Extract JSON from the response (in case there's extra text)
       const jsonMatch = analysis.match(/\{[\s\S]*\}/);
@@ -60,6 +73,7 @@ const analyzeVehicleWithGrok = async (vehicleData, condition = 'good', marketDat
         
         // Validate the AI-generated valuation
         const validation = validateAIValuation(parsedAnalysis, vehicleData, marketData);
+        console.log('🔍 Validation:', validation);
         
         // Add validation results to the response
         const enhancedResult = {
@@ -107,50 +121,6 @@ const analyzeVehicleWithGrok = async (vehicleData, condition = 'good', marketDat
   }
 };
 
-// Optional: Keep the basic version as a fallback
-const analyzeVehicleWithGrokBasic = async (vehicleData, condition = 'good') => {
-  console.log(`🧠 Generating basic vehicle analysis with Grok for condition: ${condition}...`);
-  
-  try {
-    const { buildVehicleValuationPrompt } = require('./ai-prompts');
-    const prompt = buildVehicleValuationPrompt(vehicleData, condition);
-
-    console.log('📝 Calling Grok API with basic prompt...');
-    
-    const response = await axios.post('https://api.x.ai/v1/chat/completions', {
-      model: 'grok-3',
-      messages: [{
-        role: 'user',
-        content: prompt
-      }],
-      max_tokens: 2000,
-      temperature: 0.7
-    }, {
-      headers: {
-        'Authorization': `Bearer ${grokApiKey}`,
-        'Content-Type': 'application/json'
-      }
-    });
-
-    const analysis = response.data?.choices?.[0]?.message?.content;
-    
-    try {
-      const jsonMatch = analysis.match(/\{[\s\S]*\}/);
-      if (jsonMatch) {
-        return JSON.parse(jsonMatch[0]);
-      } else {
-        return analysis;
-      }
-    } catch (parseError) {
-      return analysis;
-    }
-    
-  } catch (error) {
-    console.error('❌ Basic Grok API error:', error);
-    throw new Error(`Basic Grok generation failed: ${error.message}`);
-  }
-};
-
 // Health check for Grok service
 const checkGrokHealth = () => {
   return {
@@ -163,7 +133,6 @@ const checkGrokHealth = () => {
 };
 
 module.exports = {
-  analyzeVehicleWithGrok, // Now uses enhanced prompt by default
-  analyzeVehicleWithGrokBasic, // Fallback to basic prompt if needed
+  analyzeVehicleWithGrok,
   checkGrokHealth
 };
