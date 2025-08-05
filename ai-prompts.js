@@ -1,10 +1,14 @@
 // AI Prompts for vehicle valuation analysis
 // Shared between Claude and Grok services
 
-// *********************************************************************************
-// Vehicle Valuation Prompts
-// *********************************************************************************
-
+/**
+ * Builds an enhanced reasoning prompt for vehicle valuation
+ * @param {Object} vehicleData - Structured vehicle data
+ * @param {string} condition - Vehicle condition
+ * @param {Object} marketData - Market data
+ * @param {number} actualMileage - Actual mileage of the vehicle
+ * @returns {string} - Enhanced reasoning prompt
+ */
 const buildEnhancedReasoningPrompt = (vehicleData, condition = 'good', marketData = null, actualMileage = null) => {
   console.log('🔍 Building enhanced reasoning prompt...');
   console.log('🔍 Vehicle data:', vehicleData);

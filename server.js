@@ -15,15 +15,40 @@ const PORT = process.env.PORT || 3001;
 app.use(cors());
 app.use(express.json());
 
-// ***************************************************
-// Enhanced API Response Structure for DriveValueAI
-// ***************************************************
+// *********************************************************************************
+// Main VIN valuation endpoint
+// *********************************************************************************
 app.post('/api/valuation', async (req, res) => {
   try {
-    const { vin, condition, mileage } = req.body;
+    const { vin, condition, mileage } = req.body; // Add mileage to destructuring
     
-    // ... validation code stays the same ...
-    
+    // Validate VIN
+    if (!isValidVIN(vin)) {
+      return res.status(400).json({
+        error: 'Invalid VIN',
+        message: 'VIN must be exactly 17 characters and contain only valid characters'
+      });
+    }
+
+    // Validate condition (optional but if provided, must be valid)
+    if (condition && !isValidCondition(condition)) {
+      return res.status(400).json({
+        error: 'Invalid condition',
+        message: 'Condition must be one of: excellent, good, fair, poor'
+      });
+    }
+
+    // Validate mileage (optional but if provided, must be reasonable)
+    if (mileage !== undefined) {
+      const parsedMileage = parseInt(mileage);
+      if (isNaN(parsedMileage) || parsedMileage < 0 || parsedMileage > 1000000) {
+        return res.status(400).json({
+          error: 'Invalid mileage',
+          message: 'Mileage must be a number between 0 and 1,000,000'
+        });
+      }
+    }
+
     const vehicleCondition = normalizeCondition(condition);
     const actualMileage = mileage ? parseInt(mileage) : null;
 
