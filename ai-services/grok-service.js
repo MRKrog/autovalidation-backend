@@ -1,7 +1,8 @@
 const axios = require('axios');
-const { buildEnhancedReasoningPrompt, buildVehicleValuationPrompt, validateAIValuation } = require('./ai-prompts');
-const { SimpleTokenCounter } = require('./pricing/estimate-prompt-cost');
-require('dotenv').config(); // Ensure dotenv is loaded
+const { buildEnhancedReasoningPrompt, validateAIValuation } = require('../ai-prompts/ai-prompts');
+const { SimpleTokenCounter } = require('../pricing/estimate-prompt-cost');
+
+require('dotenv').config();
 
 // Initialize Grok API configuration
 const grokApiKey = process.env.GROK_API_KEY?.trim();
@@ -22,17 +23,13 @@ const analyzeVehicleWithGrok = async (vehicleData, condition = 'good', marketDat
   
   try {
     const prompt = buildEnhancedReasoningPrompt(vehicleData, condition, marketData, actualMileage);
-    // const prompt = buildEnhancedVehicleValuationPrompt(vehicleData, condition, marketData);
 
-    // grok-mini, grok-3, grok-4
-    const model = 'grok-4';
-    // const model = 'grok-3-mini';
-
-    // console.log('prompt', prompt);
+    // const model = 'grok-4';
+    // const model = 'grok-3';
+    const model = 'grok-3-mini';
 
     SimpleTokenCounter.estimateCost(model, prompt); // Estimate cost before making request
 
-    // Grok API call
     const response = await axios.post('https://api.x.ai/v1/chat/completions', {
       model: model,
       messages: [{

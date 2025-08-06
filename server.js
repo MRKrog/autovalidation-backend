@@ -1,8 +1,8 @@
 const express = require('express');
 const cors = require('cors');
 const axios = require('axios');
-const { analyzeVehicleWithClaude, checkClaudeHealth } = require('./claude-service');
-const { analyzeVehicleWithGrok, checkGrokHealth } = require('./grok-service');
+const { analyzeVehicleWithClaude, checkClaudeHealth } = require('./ai-services/claude-service');
+const { analyzeVehicleWithGrok, checkGrokHealth } = require('./ai-services/grok-service');
 const { getMockResponse, hasMockResponse } = require('./test-responses');
 const { structureVehicleData, formatVehicleForResponse, formatEnhancedVehicleForResponse, isValidVehicleData, getVehicleIdentifier } = require('./utilities/vehicle-helpers');
 const { isValidVIN, normalizeVIN, getSquishVIN, isValidCondition, normalizeCondition, generateReportId } = require('./utilities/vin-helpers');
@@ -371,16 +371,8 @@ app.get('/api/sample-vins', (req, res) => {
   res.json({
     sample_vins: [
       {
-        vin: '1G1ZD5ST8JF134138',
-        description: '2018 Chevrolet Malibu'
-      },
-      {
-        vin: '1HGBH41JXMN109186',
-        description: '2021 Honda Civic'
-      },
-      {
-        vin: '1FTFW1ET5DFC10312',
-        description: '2013 Ford F-150'
+        vin: 'JF1GR8H6XBL831881',
+        description: '2011 Subaru Impreza WRX STI (Low Mileage Performance)'
       }
     ]
   });

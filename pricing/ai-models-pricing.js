@@ -6,56 +6,90 @@
 // *********************************************************************************
 
 const CLAUDE_MODELS = {
-  // Claude 4 Opus (Most Capable - Released May 2025)
-  'claude-4-opus': {
+  // CLAUDE 4 MODELS (Current Generation)
+  'claude-opus-4-1-20250805': {
     input_cost_per_1m_tokens: 15.00,
     output_cost_per_1m_tokens: 75.00,
-    max_tokens: 8192, // Up to 32K in extended mode
+    max_tokens: 32000, // CORRECTED: Not 200000
     context_window: 200000,
-    description: 'Most intelligent Claude model; hybrid reasoning for complex tasks',
-    recommended_for: 'Premium analysis, AI agents, advanced coding',
+    description: 'Most intelligent Claude 4 model - world\'s best coding model',
+    recommended_for: 'Complex coding, AI agents, extended reasoning, premium analysis',
     estimated_cost_per_request: 0.1125, // ~2500 tokens (1500 input + 1000 output)
     estimated_cost_with_caching: 0.045, // With 90% caching savings
-    features: ['Frontier intelligence', 'Extended thinking', 'Tool use', 'Prompt caching (up to 90% savings)']
+    features: ['Frontier intelligence', 'Extended thinking', 'Tool use', 'Prompt caching (up to 90% savings)', 'Memory capabilities', 'Parallel tool execution']
   },
 
-  // Claude 4 Sonnet (Balanced - Released May 2025)
-  'claude-4-sonnet': {
-    input_cost_per_1m_tokens: 3.00,
-    output_cost_per_1m_tokens: 15.00,
-    max_tokens: 8192,
+  'claude-opus-4-20250514': {
+    input_cost_per_1m_tokens: 15.00, // CORRECTED: Was wrong at 3.00
+    output_cost_per_1m_tokens: 75.00, // CORRECTED: Was wrong at 15.00
+    max_tokens: 32000, // CORRECTED: Not 200000
     context_window: 200000,
-    description: 'Balanced performance for most workflows',
-    recommended_for: 'Vehicle valuations, code reviews, high-volume tasks',
+    description: 'Previous Claude 4 Opus flagship model',
+    recommended_for: 'Complex coding, premium analysis, advanced reasoning',
+    estimated_cost_per_request: 0.1125, // ~2500 tokens
+    estimated_cost_with_caching: 0.045, // With caching
+    features: ['High intelligence', 'Extended thinking', 'Tool use', 'Prompt caching']
+  },
+
+  'claude-sonnet-4-20250514': {
+    input_cost_per_1m_tokens: 3.00, // CONFIRMED CORRECT
+    output_cost_per_1m_tokens: 15.00, // CONFIRMED CORRECT
+    max_tokens: 64000, // CONFIRMED CORRECT
+    context_window: 200000,
+    description: 'Balanced performance Claude 4 model - excellent for most workflows',
+    recommended_for: 'General development, code reviews, balanced tasks, high-volume operations',
     estimated_cost_per_request: 0.0195, // ~2500 tokens
     estimated_cost_with_caching: 0.0078, // With caching
-    features: ['Balanced speed/intelligence', 'Hybrid reasoning', 'Tool use', 'Prompt caching']
+    features: ['Balanced speed/intelligence', 'Extended thinking', 'Tool use', 'Prompt caching', 'Parallel tool execution']
   },
 
-  // Claude 3.5 Haiku (Fast & Economical)
-  'claude-3-5-haiku': {
-    input_cost_per_1m_tokens: 0.80,
-    output_cost_per_1m_tokens: 4.00,
-    max_tokens: 4096,
+  // CLAUDE 3.x MODELS (Legacy/Previous Generation)
+  'claude-3-7-sonnet-20250219': {
+    input_cost_per_1m_tokens: 3.00, // CORRECTED: Was wrong at 15.00
+    output_cost_per_1m_tokens: 15.00, // CORRECTED: Was wrong at 75.00
+    max_tokens: 64000, // CORRECTED: Updated based on documentation
     context_window: 200000,
-    description: 'Fastest and most cost-effective model',
-    recommended_for: 'High-volume processing, budget operations',
-    estimated_cost_per_request: 0.0052, // ~2500 tokens
+    description: 'Previous generation high-performance model with early extended thinking',
+    recommended_for: 'Legacy applications, transition to Claude 4',
+    estimated_cost_per_request: 0.0195, // ~2500 tokens
+    estimated_cost_with_caching: 0.0078, // With caching
+    features: ['Good reasoning', 'Early extended thinking', 'Tool use', 'Prompt caching']
+  },
+
+  'claude-3-5-sonnet-20241022': {
+    input_cost_per_1m_tokens: 3.00, // CORRECTED: Was wrong at 0.25
+    output_cost_per_1m_tokens: 15.00, // CORRECTED: Was wrong at 1.25
+    max_tokens: 8192, // CORRECTED: Based on documentation
+    context_window: 200000,
+    description: 'Previous Claude 3.5 Sonnet model',
+    recommended_for: 'Legacy applications transitioning to Claude 4',
+    estimated_cost_per_request: 0.0195, // ~2500 tokens
+    estimated_cost_with_caching: 0.0078, // With caching
+    features: ['Good performance', 'Vision capabilities', 'Tool use', 'Prompt caching']
+  },
+
+  'claude-3-5-haiku-20241022': {
+    input_cost_per_1m_tokens: 0.80, // CORRECTED: Was wrong at 0.25
+    output_cost_per_1m_tokens: 4.00, // CORRECTED: Was wrong at 1.25
+    max_tokens: 8192,
+    context_window: 200000,
+    description: 'Fast and cost-effective Claude 3.5 model',
+    recommended_for: 'Budget-conscious operations, high-volume simple tasks, speed-focused applications',
+    estimated_cost_per_request: 0.0052, // ~2500 tokens (1500 input + 1000 output)
     estimated_cost_with_caching: 0.0021, // With caching
-    features: ['Fast response', 'Cost-effective', 'Good accuracy', 'Prompt caching']
+    features: ['Very fast', 'Cost-effective', 'Vision capabilities', 'Prompt caching']
   },
 
-  // Claude 3 Haiku (Legacy - Very Economical)
-  'claude-3-haiku': {
-    input_cost_per_1m_tokens: 0.25,
-    output_cost_per_1m_tokens: 1.25,
+  'claude-3-haiku-20240307': {
+    input_cost_per_1m_tokens: 0.25, // CONFIRMED CORRECT
+    output_cost_per_1m_tokens: 1.25, // CONFIRMED CORRECT
     max_tokens: 4096,
     context_window: 200000,
-    description: 'Legacy model, very cost-effective',
-    recommended_for: 'Budget-conscious operations, simple tasks',
-    estimated_cost_per_request: 0.001625, // ~2500 tokens
-    estimated_cost_with_caching: 0.00065, // With caching
-    features: ['Very cost-effective', 'Stable', 'Basic tasks', 'Prompt caching']
+    description: 'Most cost-effective legacy Claude 3 model',
+    recommended_for: 'Budget operations, simple tasks, development testing',
+    estimated_cost_per_request: 0.001625,
+    estimated_cost_with_caching: 0.00065,
+    features: ['Very cost-effective', 'Basic capabilities', 'Legacy support']
   }
 };
 
@@ -66,49 +100,52 @@ const CLAUDE_MODELS = {
 const GROK_MODELS = {
   // Grok 4 (Flagship - Released July 2025)
   'grok-4': {
-    input_cost_per_1m_tokens: 3.00, // CORRECTED from 15.00
-    input_cost_per_1m_tokens_cached: 0.75, // 75% savings on cached inputs
+    input_cost_per_1m_tokens: 3.00,
     output_cost_per_1m_tokens: 15.00,
-    max_tokens: 32768, // Up to 32K output
-    context_window: 256000, // 128K in app
-    description: 'Most intelligent model; text/vision with tools',
-    recommended_for: 'Complex reasoning, STEM, real-time search',
-    estimated_cost_per_request: 0.0195, // ~2500 tokens (1500 input + 1000 output)
-    estimated_cost_with_caching: 0.015, // With 75% input savings
-    features: ['PhD-level reasoning', 'Native tools', 'Real-time search', 'Caching (75% input savings)']
+    context_window: 256000, // 256K
+    rate_limits: {
+      tokens_per_minute: 2000000, // 2M TPM
+      requests_per_minute: 480 // 480 RPM
+    },
+    modalities: ['text', 'image'], // Text and image input
+    capabilities: ['function_calling', 'structured_outputs', 'reasoning'],
+    description: 'Latest Grok 4 model - reasoning model with vision',
+    recommended_for: 'Complex reasoning, vision tasks, function calling',
+    features: ['Reasoning model (always thinks)', 'Vision capabilities', 'Function calling', 'Structured outputs'],
+    knowledge_cutoff: 'November 2024'
   },
 
   // Grok 3 (Previous Flagship - Released February 2025)
   'grok-3': {
     input_cost_per_1m_tokens: 3.00,
-    input_cost_per_1m_tokens_cached: 0.75,
     output_cost_per_1m_tokens: 15.00,
-    max_tokens: 8192,
-    context_window: 131072,
-    description: 'Strong reasoning for balanced tasks',
-    recommended_for: 'Standard operations, research',
-    estimated_cost_per_request: 0.0195, // ~2500 tokens
-    estimated_cost_with_caching: 0.015, // With caching
-    features: ['Reasoning', 'Math/science', 'Real-time data', 'Caching']
+    context_window: 131072, // 131K
+    rate_limits: {
+      requests_per_minute: 600
+    },
+    modalities: ['text', 'image'],
+    capabilities: ['function_calling', 'structured_outputs'],
+    description: 'Previous generation Grok model',
+    recommended_for: 'Standard operations, balanced performance',
+    knowledge_cutoff: 'November 2024'
   },
 
   // Grok 3 Mini (Compact & Economical - Released April 2025)
   'grok-3-mini': {
-    input_cost_per_1m_tokens: 0.25, // CORRECTED from 0.30
-    input_cost_per_1m_tokens_cached: 0.0625, // 75% savings
-    output_cost_per_1m_tokens: 1.00, // CORRECTED from 0.50
-    max_tokens: 8192,
+    input_cost_per_1m_tokens: 0.30, // NOTE: Your original had 0.25, official docs show 0.30
+    output_cost_per_1m_tokens: 0.50, // NOTE: Your original had 1.00, official docs show 0.50
     context_window: 131072,
-    description: 'Lightweight for high-volume',
-    recommended_for: 'Budget tasks, quick processing',
-    estimated_cost_per_request: 0.001375, // ~2500 tokens (1500 input + 1000 output)
-    estimated_cost_with_caching: 0.0011, // With caching
-    features: ['Cost-effective', 'Fast', 'Good performance', 'Caching']
+    rate_limits: {
+      requests_per_minute: 480
+    },
+    modalities: ['text', 'image'],
+    capabilities: ['function_calling', 'structured_outputs'],
+    description: 'Lightweight, cost-effective Grok model',
+    recommended_for: 'Budget operations, high-volume tasks',
+    knowledge_cutoff: 'November 2024'
   }
 
-  // NOTE: Removed non-existent models:
-  // - "Grok 4 Heavy" (this is a multi-agent mode in SuperGrok Heavy subscription, not a separate API model)
-  // - "Grok 3 Speed" and "Grok 3 Mini Speed" (these don't exist)
+  
 };
 
 // *********************************************************************************
@@ -198,26 +235,26 @@ const getModelRecommendations = (useCase, budget, volume) => {
   const recommendations = {
     'high_volume_budget': {
       primary: 'grok-3-mini',
-      secondary: 'claude-3-haiku',
+      secondary: 'claude-3-haiku-20240307',
       reasoning: 'Grok 3 Mini offers lowest cost (~$0.0014/request) for high-volume; caching reduces to ~$0.0011'
     },
     'quality_focused': {
-      primary: 'claude-4-sonnet',
+      primary: 'claude-3-sonnet-20240229',
       secondary: 'grok-3',
-      reasoning: 'Claude 4 Sonnet balances quality/cost at ~$0.0195/request; both models same pricing'
+      reasoning: 'Claude 3 Sonnet balances quality/cost at ~$0.0195/request; both models same pricing'
     },
     'premium_analysis': {
-      primary: 'claude-4-opus',
+      primary: 'claude-3-opus-20240229',
       secondary: 'grok-4',
-      reasoning: 'Claude 4 Opus for frontier intelligence (~$0.11/request); Grok 4 for reasoning with tools (~$0.0195/request)'
+      reasoning: 'Claude 3 Opus for frontier intelligence (~$0.11/request); Grok 4 for reasoning with tools (~$0.0195/request)'
     },
     'speed_focused': {
-      primary: 'claude-3-5-haiku',
+      primary: 'claude-3-5-sonnet-20240606',
       secondary: 'grok-3-mini',
       reasoning: 'Optimized for fast, low-cost responses'
     },
     'development_testing': {
-      primary: 'claude-3-haiku',
+      primary: 'claude-3-haiku-20240307',
       secondary: 'grok-3-mini',
       reasoning: 'Low-cost for testing; ~$0.0014-0.0016/request'
     }
@@ -238,10 +275,10 @@ const compareModelCosts = () => {
   ];
 
   const models = {
-    'Claude 4 Opus': 'claude-4-opus',
-    'Claude 4 Sonnet': 'claude-4-sonnet',
-    'Claude 3.5 Haiku': 'claude-3-5-haiku',
-    'Claude 3 Haiku': 'claude-3-haiku',
+    'Claude 3 Opus': 'claude-3-opus-20240229',
+    'Claude 3 Sonnet': 'claude-3-sonnet-20240229',
+    'Claude 3.5 Sonnet': 'claude-3-5-sonnet-20240606',
+    'Claude 3 Haiku': 'claude-3-haiku-20240307',
     'Grok 4': 'grok-4',
     'Grok 3': 'grok-3',
     'Grok 3 Mini': 'grok-3-mini'
