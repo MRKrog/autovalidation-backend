@@ -1,5 +1,6 @@
 const axios = require('axios');
-const { buildEnhancedReasoningPrompt, validateAIValuation } = require('../ai-prompts/ai-prompts');
+const { /*buildEnhancedReasoningPrompt,*/ validateAIValuation } = require('../ai-prompts/ai-prompts');
+const { buildEnhancedReasoningPrompt } = require('../ai-prompts/ai-prompt-8-5');
 const { SimpleTokenCounter } = require('../pricing/estimate-prompt-cost');
 
 require('dotenv').config();

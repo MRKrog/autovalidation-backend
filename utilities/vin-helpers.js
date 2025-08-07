@@ -12,24 +12,6 @@ const isValidVIN = (vin) => {
 };
 
 /**
- * Normalizes a VIN to uppercase format
- * @param {string} vin - The VIN to normalize
- * @returns {string} - Normalized VIN in uppercase
- */
-const normalizeVIN = (vin) => {
-  return vin ? vin.toUpperCase() : '';
-};
-
-/**
- * Extracts the first 11 characters of a VIN (squish VIN)
- * @param {string} vin - The VIN to process
- * @returns {string} - First 11 characters of the VIN
- */
-const getSquishVIN = (vin) => {
-  return vin ? vin.substring(0, 11) : '';
-};
-
-/**
  * Validates vehicle condition
  * @param {string} condition - The condition to validate
  * @returns {boolean} - True if condition is valid, false otherwise
@@ -48,20 +30,8 @@ const normalizeCondition = (condition) => {
   return condition ? condition.toLowerCase() : 'good';
 };
 
-/**
- * Generates a unique report ID
- * @param {string} prefix - Optional prefix for the report ID
- * @returns {string} - Generated report ID
- */
-const generateReportId = (prefix = 'VVP') => {
-  return `${prefix}-${Date.now()}`;
-};
-
 module.exports = {
   isValidVIN,
-  normalizeVIN,
-  getSquishVIN,
   isValidCondition,
-  normalizeCondition,
-  generateReportId
+  normalizeCondition
 }; 

@@ -1,11 +1,11 @@
 const express = require('express');
 const cors = require('cors');
 const axios = require('axios');
-const { analyzeVehicleWithClaude, checkClaudeHealth } = require('./ai-services/claude-service');
-const { analyzeVehicleWithGrok, checkGrokHealth } = require('./ai-services/grok-service');
-const { getMockResponse, hasMockResponse } = require('./test-responses');
-const { structureVehicleData, formatVehicleForResponse, formatEnhancedVehicleForResponse, isValidVehicleData, getVehicleIdentifier } = require('./utilities/vehicle-helpers');
-const { isValidVIN, normalizeVIN, getSquishVIN, isValidCondition, normalizeCondition, generateReportId } = require('./utilities/vin-helpers');
+const { analyzeVehicleWithAutoDev } = require('./services/auto-dev-service');
+const { analyzeVehicleWithClaude, checkClaudeHealth } = require('./services/claude-service');
+const { analyzeVehicleWithGrok, checkGrokHealth } = require('./services/grok-service');
+const { getMockResponse, hasMockResponse } = require('./testing/test-responses');
+const { isValidVIN, isValidCondition, normalizeCondition } = require('./utilities/vin-helpers');
 require('dotenv').config();
 
 const app = express();
@@ -20,8 +20,8 @@ app.use(express.json());
 // *********************************************************************************
 app.post('/api/valuation', async (req, res) => {
   try {
-    const { vin, condition, mileage } = req.body; // Add mileage to destructuring
-    
+    const { vin, condition, mileage, isTest } = req.body; // Add mileage to destructuring
+    console.log('🧪 isTest value:', isTest);
     // Validate VIN
     if (!isValidVIN(vin)) {
       return res.status(400).json({
@@ -52,29 +52,32 @@ app.post('/api/valuation', async (req, res) => {
     const vehicleCondition = normalizeCondition(condition);
     const actualMileage = mileage ? parseInt(mileage) : null;
 
-    // STEP 1: Decode VIN (stays the same)
-    const autoDevResponse = await axios.get(
-      `https://auto.dev/api/vin/${vin}?apikey=${process.env.AUTO_DEV_API_KEY}`
-    );
+    if (isTest) {
+      console.log('🧪 TESTING VIN NUMBER: ', vin);
+      const delay = 5000;
+      
+      // Create a promise that resolves after the delay
+      await new Promise(resolve => setTimeout(resolve, delay));
+      
+      const mockResponse = getMockResponse(vin, vehicleCondition);
+      return res.json(mockResponse);
+    }
     
-    const rawVehicleSpecs = autoDevResponse.data;
-    const vehicleData = structureVehicleData(rawVehicleSpecs, vin);
+    console.log('🚨 This should NOT run if isTest is true!');
+    
+    // STEP 1: Decode VIN (stays the same)
+    const vehicleData = await analyzeVehicleWithAutoDev(vin);
 
     // STEP 2: Get AI Analysis
+    const aiService = process.env.AI_SERVICE || 'claude';
     let aiAnalysis;
     
-    if (process.env.NODE_ENV === 'test' && hasMockResponse(vin)) {
-      aiAnalysis = getMockResponse(vin, vehicleCondition).analysis;
+    if (aiService === 'grok') {
+      aiAnalysis = await analyzeVehicleWithGrok(vehicleData, vehicleCondition, null, actualMileage);
     } else {
-      const aiService = process.env.AI_SERVICE || 'claude';
-      
-      if (aiService === 'grok') {
-        aiAnalysis = await analyzeVehicleWithGrok(vehicleData, vehicleCondition, null, actualMileage);
-      } else {
-        aiAnalysis = await analyzeVehicleWithClaude(vehicleData, vehicleCondition, null, actualMileage);
-      }
+      aiAnalysis = await analyzeVehicleWithClaude(vehicleData, vehicleCondition, null, actualMileage);
     }
-
+    
     // STEP 3: Build Enhanced Response Structure
     const valuationReport = {
       success: true,
@@ -206,7 +209,7 @@ app.post('/api/valuation', async (req, res) => {
       }
     };
 
-    res.json(valuationReport);
+    return res.json(valuationReport);
 
   } catch (error) {
     console.error('API Error:', error);
@@ -222,114 +225,6 @@ app.post('/api/valuation', async (req, res) => {
     res.status(500).json({
       error: 'Internal Server Error',
       message: 'Something went wrong processing your request',
-      details: process.env.NODE_ENV === 'development' ? error.message : undefined
-    });
-  }
-});
-
-// Enhanced valuation endpoint with market data (optional future feature)
-app.post('/api/valuation/enhanced', async (req, res) => {
-  try {
-    const { vin, condition, includeMarketData } = req.body;
-    
-    // Validate VIN
-    if (!isValidVIN(vin)) {
-      return res.status(400).json({
-        error: 'Invalid VIN',
-        message: 'VIN must be exactly 17 characters and contain only valid characters'
-      });
-    }
-
-    if (condition && !isValidCondition(condition)) {
-      return res.status(400).json({
-        error: 'Invalid condition',
-        message: 'Condition must be one of: excellent, good, fair, poor'
-      });
-    }
-
-    const vehicleCondition = normalizeCondition(condition);
-
-    // STEP 1: Decode VIN
-    const autoDevResponse = await axios.get(
-      `https://auto.dev/api/vin/${vin}?apikey=${process.env.AUTO_DEV_API_KEY}`
-    );
-
-    const rawVehicleSpecs = autoDevResponse.data;
-    
-    if (!rawVehicleSpecs || rawVehicleSpecs.error) {
-      return res.status(404).json({
-        error: 'VIN not found',
-        message: 'Unable to decode VIN. Please verify the VIN is correct.'
-      });
-    }
-
-    // Structure vehicle data for enhanced analysis
-    const vehicleData = structureVehicleData(rawVehicleSpecs);
-
-    // Step 2: Optionally fetch market data (future enhancement)
-    let marketData = null;
-    if (includeMarketData) {
-      // This could integrate with market data APIs in the future
-      // marketData = await getMarketContext(vehicleData.year, vehicleData.make.name, vehicleData.model.name);
-      console.log('📊 Market data integration not yet implemented');
-    }
-
-    // Step 3: Enhanced AI analysis
-    const aiService = process.env.AI_SERVICE || 'claude';
-    let aiAnalysis;
-    
-    if (aiService.toLowerCase() === 'grok') {
-      console.log('🤖 Using Enhanced Grok AI with market context');
-      aiAnalysis = await analyzeVehicleWithGrok(vehicleData, vehicleCondition, marketData);
-    } else {
-      console.log('🧠 Using Claude AI for enhanced analysis');
-      aiAnalysis = await analyzeVehicleWithClaude(vehicleData, vehicleCondition);
-    }
-
-    // Step 4: Structure enhanced response
-    const enhancedValuationReport = {
-      success: true,
-      timestamp: new Date().toISOString(),
-      vin: vin.toUpperCase(),
-      vehicle: {
-        year: vehicleData.year,
-        make: vehicleData.make?.name || vehicleData.make,
-        model: vehicleData.model?.name || vehicleData.model,
-        trim: vehicleData.trim?.name || vehicleData.trim,
-        style: vehicleData.style?.name || vehicleData.style,
-        engine_specs: vehicleData.engine,
-        transmission_specs: vehicleData.transmission,
-        drivetrain: vehicleData.drivenWheels || vehicleData.drivetrain,
-        fuel_economy: vehicleData.mpg,
-        categories: vehicleData.categories,
-        options: vehicleData.options,
-        colors: vehicleData.colors,
-        made_in: vehicleData.made_in,
-        msrp: vehicleData.msrp
-      },
-      condition: vehicleCondition,
-      analysis: aiAnalysis,
-      market_data: marketData,
-      report_id: `VVP-ENH-${Date.now()}`,
-      generated_by: 'VinValuation Pro API v1.1 (Enhanced Premium)'
-    };
-
-    res.json(enhancedValuationReport);
-
-  } catch (error) {
-    console.error('Enhanced API Error:', error);
-    
-    if (error.response) {
-      return res.status(error.response.status).json({
-        error: 'External API Error',
-        message: 'Unable to process enhanced request. Please try again later.',
-        details: process.env.NODE_ENV === 'development' ? error.message : undefined
-      });
-    }
-    
-    res.status(500).json({
-      error: 'Internal Server Error',
-      message: 'Something went wrong processing your enhanced request',
       details: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
@@ -351,79 +246,6 @@ app.get('/api/health', (req, res) => {
     claude: claudeHealth,
     grok: grokHealth
   });
-});
-
-// VIN validation endpoint (free check)
-app.post('/api/validate-vin', (req, res) => {
-  const { vin } = req.body;
-  
-  const isValid = isValidVIN(vin);
-  
-  res.json({
-    vin: vin?.toUpperCase(),
-    valid: isValid,
-    message: isValid ? 'Valid VIN format' : 'Invalid VIN format'
-  });
-});
-
-// Sample VINs endpoint for testing
-app.get('/api/sample-vins', (req, res) => {
-  res.json({
-    sample_vins: [
-      {
-        vin: 'JF1GR8H6XBL831881',
-        description: '2011 Subaru Impreza WRX STI (Low Mileage Performance)'
-      }
-    ]
-  });
-});
-
-// Test endpoint that always uses mock responses
-app.post('/api/test-valuation', async (req, res) => {
-  try {
-    const { vin, condition } = req.body;
-    
-    // Validate VIN
-    if (!isValidVIN(vin)) {
-      return res.status(400).json({
-        error: 'Invalid VIN',
-        message: 'VIN must be exactly 17 characters and contain only valid characters'
-      });
-    }
-
-    // Validate condition (optional but if provided, must be valid)
-    const validConditions = ['excellent', 'good', 'fair', 'poor'];
-    if (condition && !validConditions.includes(condition.toLowerCase())) {
-      return res.status(400).json({
-        error: 'Invalid condition',
-        message: 'Condition must be one of: excellent, good, fair, poor'
-      });
-    }
-
-    const vehicleCondition = condition ? condition.toLowerCase() : 'good'; // Default to good if not provided
-
-    console.log(`🧪 Testing VIN: ${vin} with condition: ${vehicleCondition}`);
-
-    // Check if we have a mock response for this VIN
-    if (hasMockResponse(vin)) {
-      const mockResponse = getMockResponse(vin, vehicleCondition);
-      console.log('✅ Using mock response');
-      return res.json(mockResponse);
-    } else {
-      return res.status(404).json({
-        error: 'No test data available',
-        message: `No mock response available for VIN: ${vin}`,
-        available_test_vins: Object.keys(require('./test-responses').MOCK_RESPONSES)
-      });
-    }
-
-  } catch (error) {
-    console.error('Test API Error:', error);
-    res.status(500).json({
-      error: 'Internal Server Error',
-      message: 'Something went wrong processing your test request'
-    });
-  }
 });
 
 // Auto.dev API endpoint solo for testing

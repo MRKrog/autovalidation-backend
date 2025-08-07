@@ -1,4 +1,5 @@
-const buildEnhancedReasoningPrompt = (vehicleData, condition = 'good', marketData = null, actualMileage = null) => {
+// ai-prompts/ai-prompt-8-5.js
+export const buildEnhancedReasoningPrompt = (vehicleData, condition = 'good', marketData = null, actualMileage = null) => {
   console.log('🔍 Analyzing vehicle with enhanced reasoning prompt...');
   console.log('🔍 Vehicle data:', vehicleData);
   console.log('🔍 Actual mileage:', actualMileage);

@@ -1,5 +1,6 @@
 const Anthropic = require('@anthropic-ai/sdk');
-const { buildEnhancedReasoningPrompt, validateAIValuation } = require('../ai-prompts/ai-prompts');
+const { /*buildEnhancedReasoningPrompt,*/ validateAIValuation } = require('../ai-prompts/ai-prompts');
+const { buildEnhancedReasoningPrompt } = require('../ai-prompts/ai-prompt-8-5');
 const { SimpleTokenCounter } = require('../pricing/estimate-prompt-cost');
 
 require('dotenv').config();
@@ -28,7 +29,7 @@ const analyzeVehicleWithClaude = async (vehicleData, condition = 'good', marketD
   try {
     const prompt = buildEnhancedReasoningPrompt(vehicleData, condition, marketData, actualMileage);
     
-    // const model = 'claude-opus-4-1-20250805';
+    // const model = 'claude-opus-4-1-20250805'; // MOST ACCURATE - MOST EXPENSIVE
     // const model = 'claude-opus-4-20250514';
     // const model = 'claude-3-7-sonnet-20250219';
     // const model = 'claude-3-5-sonnet-20241022';
