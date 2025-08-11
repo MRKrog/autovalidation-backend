@@ -18,7 +18,14 @@ if (!grokApiKey) {
   console.warn('⚠️ GROK_API_KEY environment variable is not set');
 }
 
-// Enhanced Grok API integration with validation
+/**
+ * Analyzes a vehicle with Grok and returns an enhanced vehicle analysis
+ * @param {Object} vehicleData - Raw vehicle data from auto.dev API
+ * @param {string} condition - The condition of the vehicle
+ * @param {Object} marketData - Market data for the vehicle (not used in this function)
+ * @param {number} actualMileage - The actual mileage of the vehicle (not used in this function)
+ * @returns {Object} - Enhanced vehicle analysis
+ */
 const analyzeVehicleWithGrok = async (vehicleData, condition = 'good', marketData = null, actualMileage = null) => {
   console.log(`🧠 Generating enhanced vehicle analysis with Grok for condition:`);
   

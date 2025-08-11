@@ -167,7 +167,11 @@ const MOCK_RESPONSES = {
   // 
 };
 
-// Helper function to get mock response with condition adjustment
+/**
+ * Returns a mock response for a given VIN
+ * @param {string} vin - The VIN to get a mock response for
+ * @returns {Object} - Mock response
+ */
 const getMockResponse = (vin) => {
 
   const mockResponse = MOCK_RESPONSES[vin];
@@ -181,13 +185,7 @@ const getMockResponse = (vin) => {
   return null;
 };
 
-// Helper function to check if VIN has a mock response
-const hasMockResponse = (vin) => {
-  return !!MOCK_RESPONSES[vin];
-};
-
 module.exports = {
   MOCK_RESPONSES,
-  getMockResponse,
-  hasMockResponse
+  getMockResponse
 }; 

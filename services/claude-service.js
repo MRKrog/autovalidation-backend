@@ -22,7 +22,14 @@ const anthropic = new Anthropic({
   apiKey: apiKey
 });
 
-// Claude API integration
+/**
+ * Analyzes a vehicle with Claude and returns an enhanced vehicle analysis
+ * @param {Object} vehicleData - Raw vehicle data from auto.dev API
+ * @param {string} condition - The condition of the vehicle
+ * @param {Object} marketData - Market data for the vehicle (not used in this function)
+ * @param {number} actualMileage - The actual mileage of the vehicle (not used in this function)
+ * @returns {Object} - Enhanced vehicle analysis
+ */
 const analyzeVehicleWithClaude = async (vehicleData, condition = 'good', marketData = null, actualMileage = null) => {
   console.log(`🧠 Generating vehicle analysis with Claude for condition: ${condition}...`);
   

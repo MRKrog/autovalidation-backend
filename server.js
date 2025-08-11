@@ -4,7 +4,7 @@ const axios = require('axios');
 const { analyzeVehicleWithAutoDev } = require('./services/auto-dev-service');
 const { analyzeVehicleWithClaude, checkClaudeHealth } = require('./services/claude-service');
 const { analyzeVehicleWithGrok, checkGrokHealth } = require('./services/grok-service');
-const { getMockResponse, hasMockResponse } = require('./testing/test-responses');
+const { getMockResponse } = require('./testing/test-responses');
 const { isValidVIN, isValidCondition, normalizeCondition } = require('./utilities/vin-helpers');
 require('dotenv').config();
 

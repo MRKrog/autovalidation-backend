@@ -3,7 +3,11 @@ const { structureVehicleData } = require('../utilities/vehicle-helpers');
 
 require('dotenv').config();
 
-// Auto.dev API integration
+/**
+ * Analyzes a vehicle with Auto.dev and returns raw vehicle data
+ * @param {string} vin - The VIN of the vehicle to analyze
+ * @returns {Object} - Raw vehicle data from Auto.dev API
+ */
 const analyzeVehicleWithAutoDev = async (vin) => {
   console.log(`🧠 Generating vehicle analysis with Auto.dev: ${vin}...`);
   
@@ -20,9 +24,8 @@ const analyzeVehicleWithAutoDev = async (vin) => {
   } catch (error) {
     console.error('❌ Auto.dev API error:', error);
     
-    // Handle specific Claude API errors
     if (error.status === 429) {
-      throw new Error('Rate limit exceeded - too many requests to Claude');
+      throw new Error('Rate limit exceeded - too many requests to Auto.dev');
     } else if (error.status === 401) {
       throw new Error('Invalid Auto.dev API key');
     } else if (error.status === 400) {
