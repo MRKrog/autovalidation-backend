@@ -16,6 +16,11 @@ const analyzeVehicleWithAutoDev = async (vin) => {
     console.log(`Auto.dev URL: ${autoDevURL}`)
     const autoDevResponse = await axios.get(autoDevURL);
 
+    // Check for payment required error in response data before processing
+    if (autoDevResponse.data && autoDevResponse.data.errorType === 'PAYMENT_REQUIRED') {
+      throw new Error('Auto.dev API requires Scale plan upgrade. Please upgrade at https://auto.dev/pricing');
+    }
+
     const rawVehicleSpecs = autoDevResponse.data;
     const vehicleData = structureVehicleData(rawVehicleSpecs, vin);
     
@@ -23,7 +28,11 @@ const analyzeVehicleWithAutoDev = async (vin) => {
   } catch (error) {
     console.error('❌ Auto.dev API error:', error);
     
-    if (error.status === 429) {
+    // Check for payment required error (402 status or specific error response)
+    if (error.status === 402 || 
+        (error.response && error.response.data && error.response.data.errorType === 'PAYMENT_REQUIRED')) {
+      throw new Error('Auto.dev API requires Scale plan upgrade. Please upgrade at https://auto.dev/pricing');
+    } else if (error.status === 429) {
       throw new Error('Rate limit exceeded - too many requests to Auto.dev');
     } else if (error.status === 401) {
       throw new Error('Invalid Auto.dev API key');
