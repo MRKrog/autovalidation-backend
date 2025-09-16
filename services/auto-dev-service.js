@@ -12,10 +12,9 @@ const analyzeVehicleWithAutoDev = async (vin) => {
   console.log(`🧠 Generating vehicle analysis with Auto.dev: ${vin}...`);
   
   try {
-
-    const autoDevResponse = await axios.get(
-      `https://auto.dev/api/vin/${vin}?apikey=${process.env.AUTO_DEV_API_KEY}`
-    );
+    const autoDevURL = `https://auto.dev/api/vin/${vin}?apikey=${process.env.AUTO_DEV_API_KEY}`
+    console.log(`Auto.dev URL: ${autoDevURL}`)
+    const autoDevResponse = await axios.get(autoDevURL);
 
     const rawVehicleSpecs = autoDevResponse.data;
     const vehicleData = structureVehicleData(rawVehicleSpecs, vin);
