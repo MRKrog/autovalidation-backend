@@ -12,7 +12,8 @@ const analyzeVehicleWithAutoDev = async (vin) => {
   console.log(`🧠 Generating vehicle analysis with Auto.dev: ${vin}...`);
   
   try {
-    const autoDevURL = `https://auto.dev/api/vin/${vin}?apikey=${process.env.AUTO_DEV_API_KEY}`
+    // const autoDevURL = `https://auto.dev/api/vin/${vin}?apikey=${process.env.AUTO_DEV_API_KEY}`
+    const autoDevURL = `https://api.auto.dev/vin/${vin}?apikey=${process.env.AUTO_DEV_API_KEY}&domains=true`
     console.log(`Auto.dev URL: ${autoDevURL}`)
     const autoDevResponse = await axios.get(autoDevURL);
 
@@ -21,7 +22,7 @@ const analyzeVehicleWithAutoDev = async (vin) => {
       throw new Error('Auto.dev API requires Scale plan upgrade. Please upgrade at https://auto.dev/pricing');
     }
 
-    const rawVehicleSpecs = autoDevResponse.data;
+    const rawVehicleSpecs = autoDevResponse;
     const vehicleData = structureVehicleData(rawVehicleSpecs, vin);
     
     return vehicleData;

@@ -10,12 +10,6 @@
  */
 const structureVehicleData = (rawVehicleSpecs, vin = '') => {
   
-  // Helper function to safely get submodel data
-  const getSubmodel = () => {
-    const submodel = rawVehicleSpecs.years?.[0]?.styles?.[0]?.submodel;
-    return submodel ? { ...submodel } : {};
-  };
-
   // Helper function to safely spread objects with fallbacks
   const safeSpread = (obj, fallback = {}) => {
     return obj ? { ...obj } : fallback;
@@ -29,6 +23,68 @@ const structureVehicleData = (rawVehicleSpecs, vin = '') => {
     return value;
   };
 
+  // Check if this is the new API structure
+  const isNewApiStructure = rawVehicleSpecs.api && rawVehicleSpecs.api.name === 'api.auto.dev';
+
+  if (isNewApiStructure) {
+    // Handle new API structure
+    return {
+      // === BASIC VEHICLE IDENTIFICATION ===
+      vin: rawVehicleSpecs.vin || vin || 'Unknown',
+      year: rawVehicleSpecs.vehicle?.year || 'Unknown',
+      make: {
+        name: rawVehicleSpecs.make || 'Unknown',
+        id: rawVehicleSpecs.wmi || 'Unknown',
+        niceName: rawVehicleSpecs.make || 'Unknown'
+      },
+      model: {
+        name: rawVehicleSpecs.model || 'Unknown',
+        id: rawVehicleSpecs.model || 'Unknown',
+        niceName: rawVehicleSpecs.model || 'Unknown'
+      },
+      trim: rawVehicleSpecs.trim || 'Unknown',
+      
+      // More descriptive names
+      fullStyleDescription: rawVehicleSpecs.style || 'Unknown',
+      bodyStyle: {
+        body: rawVehicleSpecs.style || 'Unknown',
+        modelName: rawVehicleSpecs.model || 'Unknown'
+      },
+      
+      // === POWERTRAIN SPECIFICATIONS ===
+      engine: {}, // Not available in new API
+      transmission: {}, // Not available in new API
+      driveType: 'Unknown', // Not available in new API
+      
+      // === VEHICLE CHARACTERISTICS ===
+      specifications: {
+        doors: 'Unknown', // Not available in new API
+        type: rawVehicleSpecs.type || 'Unknown',
+        origin: rawVehicleSpecs.origin || 'Unknown'
+      },
+      
+      // === FUEL ECONOMY ===
+      fuelEconomy: {}, // Not available in new API
+      
+      // === PRICING INFORMATION ===
+      pricing: {}, // Not available in new API
+      
+      // === METADATA ===
+      metadata: {
+        manufacturerCode: rawVehicleSpecs.wmi || 'Unknown',
+        matchingType: 'Unknown',
+        squishVin: rawVehicleSpecs.squishVin || 'Unknown',
+        styleId: 'Unknown',
+        yearId: 'Unknown',
+        vinValid: rawVehicleSpecs.vinValid || false,
+        checkDigit: rawVehicleSpecs.checkDigit || 'Unknown',
+        checksum: rawVehicleSpecs.checksum || false,
+        manufacturer: rawVehicleSpecs.vehicle?.manufacturer || 'Unknown'
+      }
+    };
+  }
+
+  // Handle old API structure (fallback)
   return {
     // === BASIC VEHICLE IDENTIFICATION ===
     vin: vin || 'Unknown',
@@ -39,7 +95,7 @@ const structureVehicleData = (rawVehicleSpecs, vin = '') => {
     
     // More descriptive names
     fullStyleDescription: rawVehicleSpecs.years?.[0]?.styles?.[0]?.name || 'Unknown',
-    bodyStyle: getSubmodel(),
+    bodyStyle: rawVehicleSpecs.years?.[0]?.styles?.[0]?.submodel || {},
     
     // === POWERTRAIN SPECIFICATIONS ===
     engine: { ...safeSpread(rawVehicleSpecs.engine) },
