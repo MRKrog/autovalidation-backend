@@ -11,7 +11,7 @@
  */
 const buildEnhancedReasoningPrompt = (vehicleData, condition = 'good', marketData = null, actualMileage = null) => {
   console.log('🔍 Building enhanced reasoning prompt...');
-  console.log('🔍 Vehicle data:', vehicleData);
+  console.log('🔍 STRUCTUREDVehicle data:', vehicleData);
   console.log('🔍 Actual mileage:', actualMileage);
 
   // Extract detailed specs

@@ -1,6 +1,7 @@
 const Anthropic = require('@anthropic-ai/sdk');
 const { /*buildEnhancedReasoningPrompt,*/ validateAIValuation } = require('../ai-prompts/ai-prompts');
-const { buildEnhancedReasoningPrompt } = require('../ai-prompts/ai-prompt-8-5');
+// const { buildEnhancedReasoningPrompt } = require('../ai-prompts/ai-prompt-8-5');
+const { buildEnhancedReasoningPrompt } = require('../ai-prompts/ai-prompt-9-16');
 const { SimpleTokenCounter } = require('../pricing/estimate-prompt-cost');
 
 require('dotenv').config();

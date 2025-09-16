@@ -10,117 +10,43 @@
  */
 const structureVehicleData = (rawVehicleSpecs, vin = '') => {
   
-  // Helper function to safely spread objects with fallbacks
-  const safeSpread = (obj, fallback = {}) => {
-    return obj ? { ...obj } : fallback;
-  };
-
-  // Convert string numbers to actual numbers where appropriate
-  const parseNumeric = (value) => {
-    if (typeof value === 'string' && !isNaN(value) && value !== '') {
-      return Number(value);
-    }
-    return value;
-  };
-
-  // Check if this is the new API structure
-  const isNewApiStructure = rawVehicleSpecs.api && rawVehicleSpecs.api.name === 'api.auto.dev';
-
-  if (isNewApiStructure) {
-    // Handle new API structure
-    return {
-      // === BASIC VEHICLE IDENTIFICATION ===
-      vin: rawVehicleSpecs.vin || vin || 'Unknown',
-      year: rawVehicleSpecs.vehicle?.year || 'Unknown',
-      make: {
-        name: rawVehicleSpecs.make || 'Unknown',
-        id: rawVehicleSpecs.wmi || 'Unknown',
-        niceName: rawVehicleSpecs.make || 'Unknown'
-      },
-      model: {
-        name: rawVehicleSpecs.model || 'Unknown',
-        id: rawVehicleSpecs.model || 'Unknown',
-        niceName: rawVehicleSpecs.model || 'Unknown'
-      },
-      trim: rawVehicleSpecs.trim || 'Unknown',
-      
-      // More descriptive names
-      fullStyleDescription: rawVehicleSpecs.style || 'Unknown',
-      bodyStyle: {
-        body: rawVehicleSpecs.style || 'Unknown',
-        modelName: rawVehicleSpecs.model || 'Unknown'
-      },
-      
-      // === POWERTRAIN SPECIFICATIONS ===
-      engine: {}, // Not available in new API
-      transmission: {}, // Not available in new API
-      driveType: 'Unknown', // Not available in new API
-      
-      // === VEHICLE CHARACTERISTICS ===
-      specifications: {
-        doors: 'Unknown', // Not available in new API
-        type: rawVehicleSpecs.type || 'Unknown',
-        origin: rawVehicleSpecs.origin || 'Unknown'
-      },
-      
-      // === FUEL ECONOMY ===
-      fuelEconomy: {}, // Not available in new API
-      
-      // === PRICING INFORMATION ===
-      pricing: {}, // Not available in new API
-      
-      // === METADATA ===
-      metadata: {
-        manufacturerCode: rawVehicleSpecs.wmi || 'Unknown',
-        matchingType: 'Unknown',
-        squishVin: rawVehicleSpecs.squishVin || 'Unknown',
-        styleId: 'Unknown',
-        yearId: 'Unknown',
-        vinValid: rawVehicleSpecs.vinValid || false,
-        checkDigit: rawVehicleSpecs.checkDigit || 'Unknown',
-        checksum: rawVehicleSpecs.checksum || false,
-        manufacturer: rawVehicleSpecs.vehicle?.manufacturer || 'Unknown'
-      }
-    };
-  }
-
-  // Handle old API structure (fallback)
   return {
     // === BASIC VEHICLE IDENTIFICATION ===
-    vin: vin || 'Unknown',
-    year: rawVehicleSpecs.years?.[0]?.year || 'Unknown',
-    make: safeSpread(rawVehicleSpecs.make, { id: 'Unknown', name: 'Unknown', niceName: 'Unknown' }),
-    model: safeSpread(rawVehicleSpecs.model, { id: 'Unknown', name: 'Unknown', niceName: 'Unknown' }),
-    trim: rawVehicleSpecs.years?.[0]?.styles?.[0]?.trim || 'Unknown',
+    vin: rawVehicleSpecs.vin || vin || 'Unknown',
+    year: rawVehicleSpecs.vehicle?.year || 'Unknown',
+    make: {
+      name: rawVehicleSpecs.make || 'Unknown',
+      id: rawVehicleSpecs.wmi || 'Unknown',
+      niceName: rawVehicleSpecs.make || 'Unknown'
+    },
+    model: {
+      name: rawVehicleSpecs.model || 'Unknown',
+      id: rawVehicleSpecs.model || 'Unknown',
+      niceName: rawVehicleSpecs.model || 'Unknown'
+    },
+    trim: rawVehicleSpecs.trim || 'Unknown',
     
     // More descriptive names
-    fullStyleDescription: rawVehicleSpecs.years?.[0]?.styles?.[0]?.name || 'Unknown',
-    bodyStyle: rawVehicleSpecs.years?.[0]?.styles?.[0]?.submodel || {},
-    
-    // === POWERTRAIN SPECIFICATIONS ===
-    engine: { ...safeSpread(rawVehicleSpecs.engine) },
-    transmission: { ...safeSpread(rawVehicleSpecs.transmission) },
-    driveType: rawVehicleSpecs.drivenWheels || 'Unknown',
+    fullStyleDescription: rawVehicleSpecs.style || 'Unknown',
+    bodyStyle: {
+      body: rawVehicleSpecs.style || 'Unknown',
+      modelName: rawVehicleSpecs.model || 'Unknown'
+    },
     
     // === VEHICLE CHARACTERISTICS ===
     specifications: {
-      doors: parseNumeric(rawVehicleSpecs.numOfDoors) || 'Unknown',
-      ...safeSpread(rawVehicleSpecs.categories)
+      type: rawVehicleSpecs.type || 'Unknown',
+      origin: rawVehicleSpecs.origin || 'Unknown'
     },
-    
-    // === FUEL ECONOMY ===
-    fuelEconomy: { ...safeSpread(rawVehicleSpecs.mpg) },
-    
-    // === PRICING INFORMATION ===
-    pricing: { ...safeSpread(rawVehicleSpecs.price) },
     
     // === METADATA ===
     metadata: {
-      manufacturerCode: rawVehicleSpecs.manufacturerCode || 'Unknown',
-      matchingType: rawVehicleSpecs.matchingType || 'Unknown',
+      manufacturerCode: rawVehicleSpecs.wmi || 'Unknown',
       squishVin: rawVehicleSpecs.squishVin || 'Unknown',
-      styleId: rawVehicleSpecs.years?.[0]?.styles?.[0]?.id || 'Unknown',
-      yearId: rawVehicleSpecs.years?.[0]?.id || 'Unknown'
+      vinValid: rawVehicleSpecs.vinValid || false,
+      checkDigit: rawVehicleSpecs.checkDigit || 'Unknown',
+      checksum: rawVehicleSpecs.checksum || false,
+      manufacturer: rawVehicleSpecs.vehicle?.manufacturer || 'Unknown'
     }
   };
 };
@@ -129,3 +55,43 @@ const structureVehicleData = (rawVehicleSpecs, vin = '') => {
 module.exports = {
   structureVehicleData
 }; 
+
+
+// const oldStructureVehicleData = {
+//   // === BASIC VEHICLE IDENTIFICATION ===
+//   vin: vin || 'Unknown',
+//   year: rawVehicleSpecs.years?.[0]?.year || 'Unknown',
+//   make: safeSpread(rawVehicleSpecs.make, { id: 'Unknown', name: 'Unknown', niceName: 'Unknown' }),
+//   model: safeSpread(rawVehicleSpecs.model, { id: 'Unknown', name: 'Unknown', niceName: 'Unknown' }),
+//   trim: rawVehicleSpecs.years?.[0]?.styles?.[0]?.trim || 'Unknown',
+  
+//   // More descriptive names
+//   fullStyleDescription: rawVehicleSpecs.years?.[0]?.styles?.[0]?.name || 'Unknown',
+//   bodyStyle: rawVehicleSpecs.years?.[0]?.styles?.[0]?.submodel || {},
+  
+//   // === POWERTRAIN SPECIFICATIONS ===
+//   engine: { ...safeSpread(rawVehicleSpecs.engine) },
+//   transmission: { ...safeSpread(rawVehicleSpecs.transmission) },
+//   driveType: rawVehicleSpecs.drivenWheels || 'Unknown',
+  
+//   // === VEHICLE CHARACTERISTICS ===
+//   specifications: {
+//     doors: parseNumeric(rawVehicleSpecs.numOfDoors) || 'Unknown',
+//     ...safeSpread(rawVehicleSpecs.categories)
+//   },
+  
+//   // === FUEL ECONOMY ===
+//   fuelEconomy: { ...safeSpread(rawVehicleSpecs.mpg) },
+  
+//   // === PRICING INFORMATION ===
+//   pricing: { ...safeSpread(rawVehicleSpecs.price) },
+  
+//   // === METADATA ===
+//   metadata: {
+//     manufacturerCode: rawVehicleSpecs.manufacturerCode || 'Unknown',
+//     matchingType: rawVehicleSpecs.matchingType || 'Unknown',
+//     squishVin: rawVehicleSpecs.squishVin || 'Unknown',
+//     styleId: rawVehicleSpecs.years?.[0]?.styles?.[0]?.id || 'Unknown',
+//     yearId: rawVehicleSpecs.years?.[0]?.id || 'Unknown'
+//   }
+// };

@@ -22,7 +22,7 @@ const analyzeVehicleWithAutoDev = async (vin) => {
       throw new Error('Auto.dev API requires Scale plan upgrade. Please upgrade at https://auto.dev/pricing');
     }
 
-    const rawVehicleSpecs = autoDevResponse;
+    const rawVehicleSpecs = autoDevResponse.data;
     const vehicleData = structureVehicleData(rawVehicleSpecs, vin);
     
     return vehicleData;
