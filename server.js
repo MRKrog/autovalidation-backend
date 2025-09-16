@@ -77,6 +77,8 @@ app.post('/api/valuation', async (req, res) => {
     } else {
       aiAnalysis = await analyzeVehicleWithClaude(vehicleData, vehicleCondition, null, actualMileage);
     }
+
+    console.log('🔍 AI Analysis:', aiAnalysis);
     
     // STEP 3: Build Enhanced Response Structure
     const valuationReport = {
@@ -87,43 +89,29 @@ app.post('/api/valuation', async (req, res) => {
       
       // Vehicle Information
       vehicle: {
-        vin: vin.toUpperCase(),
+        vin: vin.toUpperCase(), 
         year: vehicleData.year,
-        make: vehicleData.make?.name || vehicleData.make,
-        model: vehicleData.model?.name || vehicleData.model,
-        trim: vehicleData.trim?.name || vehicleData.trim,
-        style: vehicleData.style?.name || vehicleData.style,
+        make: vehicleData.make?.name,
+        model: vehicleData.model?.name,
+        trim: vehicleData.trim,
         body_style: vehicleData.bodyStyle?.body,
         
-        // Enhanced Specifications
-        engine: {
-          displacement: vehicleData.engine?.size || vehicleData.engine?.displacement,
-          horsepower: vehicleData.engine?.horsepower,
-          torque: vehicleData.engine?.torque,
-          cylinders: vehicleData.engine?.cylinder || vehicleData.engine?.cylinders,
-          configuration: vehicleData.engine?.configuration,
-          fuel_type: vehicleData.engine?.fuelType,
-          turbo: vehicleData.engine?.compressorType === 'turbocharger'
+        // Vehicle Characteristics
+        vehicle_type: vehicleData.specifications?.type,
+        origin: vehicleData.specifications?.origin,
+        full_style: vehicleData.fullStyleDescription,
+        
+        // VIN Validation Data
+        vin_validation: {
+          valid: vehicleData.metadata?.vinValid,
+          check_digit: vehicleData.metadata?.checkDigit,
+          checksum: vehicleData.metadata?.checksum,
+          wmi: vehicleData.metadata?.manufacturerCode,
+          squish_vin: vehicleData.metadata?.squishVin
         },
         
-        transmission: {
-          type: vehicleData.transmission?.transmissionType,
-          speeds: vehicleData.transmission?.numberOfSpeeds,
-          name: vehicleData.transmission?.name
-        },
-        
-        drivetrain: vehicleData.driveType || vehicleData.drivetrain,
-        fuel_economy: vehicleData.fuelEconomy,
-        doors: vehicleData.specifications?.doors,
-        vehicle_size: vehicleData.specifications?.vehicleSize,
-        epa_class: vehicleData.specifications?.epaClass,
-        
-        // Original MSRP Data
-        original_pricing: {
-          msrp: vehicleData.msrp || vehicleData.pricing?.baseMsrp,
-          invoice: vehicleData.pricing?.baseInvoice,
-          delivery_charges: vehicleData.pricing?.deliveryCharges
-        }
+        // Manufacturer Information
+        manufacturer: vehicleData.metadata?.manufacturer
       },
 
       // Valuation Input Parameters
@@ -131,25 +119,14 @@ app.post('/api/valuation', async (req, res) => {
         condition: vehicleCondition,
         mileage: {
           actual: actualMileage,
-          expected: vehicleData.year ? (2025 - vehicleData.year) * 12000 : null,
+          expected: vehicleData.year ? (2025 - vehicleData.year) * 13500 : null,
           status: actualMileage ? (
-            actualMileage < ((2025 - vehicleData.year) * 12000) ? 'below_average' :
-            actualMileage > ((2025 - vehicleData.year) * 12000) ? 'above_average' : 'average'
+            actualMileage < ((2025 - vehicleData.year) * 13500) ? 'below_average' :
+            actualMileage > ((2025 - vehicleData.year) * 13500) ? 'above_average' : 'average'
           ) : 'estimated',
           variance_percentage: actualMileage && vehicleData.year ? 
-            Math.round((((2025 - vehicleData.year) * 12000 - actualMileage) / ((2025 - vehicleData.year) * 12000)) * 100) : null
+            Math.round((((2025 - vehicleData.year) * 13500 - actualMileage) / ((2025 - vehicleData.year) * 13500)) * 100) : null
         }
-      },
-
-      // Baseline Reference Data
-      baseline_data: {
-        source: 'auto.dev',
-        retail_value: vehicleData.pricing?.usedTmvRetail,
-        private_party_value: vehicleData.pricing?.usedPrivateParty,
-        trade_in_value: vehicleData.pricing?.usedTradeIn,
-        tmv_rating: vehicleData.pricing?.tmvRecommendedRating,
-        data_quality: vehicleData.pricing?.estimateTmv ? 'estimated' : 'actual',
-        note: 'Baseline values provided for reference - AI analysis provides enhanced accuracy'
       },
 
       // AI-Enhanced Valuation Analysis
@@ -160,11 +137,13 @@ app.post('/api/valuation', async (req, res) => {
         // AI Reasoning and Analysis
         analysis: {
           primary_value_drivers: aiAnalysis.ai_reasoning?.primary_value_drivers,
-          baseline_comparison: aiAnalysis.ai_reasoning?.baseline_analysis,
           market_position: aiAnalysis.ai_reasoning?.market_position,
           pricing_strategy: aiAnalysis.ai_reasoning?.pricing_strategy,
-          ai_advantages: aiAnalysis.ai_reasoning?.key_differentiators
+          ai_advantages: aiAnalysis.ai_reasoning?.key_differentiators // dont really need this
         },
+        
+        // Key Insights
+        key_insights: aiAnalysis.key_insights,
         
         // Detailed Adjustments
         value_adjustments: aiAnalysis.detailed_adjustments,
@@ -201,8 +180,8 @@ app.post('/api/valuation', async (req, res) => {
           trade_in: aiAnalysis.market_values?.trade_in_value?.suggested_ai_price
         },
         key_highlights: [
-          actualMileage ? `${Math.abs(Math.round((((2025 - vehicleData.year) * 12000 - actualMileage) / ((2025 - vehicleData.year) * 12000)) * 100))}% ${actualMileage < ((2025 - vehicleData.year) * 12000) ? 'below' : 'above'} average mileage` : 'Standard mileage assumed',
-          `AI valuation ${aiAnalysis.market_values?.retail_value?.suggested_ai_price > vehicleData.pricing?.usedTmvRetail ? 'above' : 'below'} baseline by ${Math.abs(Math.round(((aiAnalysis.market_values?.retail_value?.suggested_ai_price - vehicleData.pricing?.usedTmvRetail) / vehicleData.pricing?.usedTmvRetail) * 100))}%`,
+          actualMileage ? `${Math.abs(Math.round((((2025 - vehicleData.year) * 13500 - actualMileage) / ((2025 - vehicleData.year) * 13500)) * 100))}% ${actualMileage < ((2025 - vehicleData.year) * 13500) ? 'below' : 'above'} average mileage` : 'Standard mileage assumed',
+          `AI-powered valuation based on comprehensive market analysis`,
           aiAnalysis.ai_reasoning?.pricing_strategy?.toLowerCase().includes('aggressive') ? 'Aggressive pricing strategy' : 'Conservative pricing strategy'
         ],
         confidence_level: aiAnalysis.confidence_assessment?.valuation_accuracy || 'high'
